@@ -41,15 +41,18 @@
   let insightGroups = [];
   let zoomType = null;
   const zoomDialog = byId('chart-dialog');
-  const chartModes = {
-    current: {ratings: 0, career: 0, partners: 0, genres: 0},
-    comparison: {ratings: 0, career: 0, partners: 1, genres: 0}
-  };
+  const chartModes = {ratings: 0, career: 0, partners: 0, genres: 0};
+  let ratingThreshold = 4;
+  let careerMetric = 'mean';
+  let genrePeriod = 5;
+  let selectedFilmIds = [];
+  let activeStudyFilmId = null;
+  let selectedStudyDirectorId = null;
   const viewLabels = {
-    ratings: {title: '作品评分', modes: ['作品点阵', '分段分布']},
-    career: {title: '作品年表', modes: ['关注年表', '评分年表']},
-    partners: {title: '共同创作', modes: ['关系网络', '合作矩阵']},
-    genres: {title: '类型画像', modes: ['类型雷达', '占比排行']}
+    ratings: {title: '口碑光谱', modes: ['口碑范围', '评分门槛']},
+    career: {title: '发行轨迹', modes: ['海报时间轴', '发行间隔']},
+    partners: {title: '共同署名', modes: ['影片与导演', '搭档和弦']},
+    genres: {title: '类型变化', modes: ['类型构成', '年代变化']}
   };
   let data = null;
   let loading = null;
@@ -61,7 +64,13 @@
   const analysisCharts = new Map();
   const chartResizeObserver = new ResizeObserver(entries => {
     entries.forEach(({target, contentRect}) => {
-      if (contentRect.width && contentRect.height) echarts.getInstanceByDom(target).resize();
+      if (!contentRect.width || !contentRect.height) return;
+      echarts.getInstanceByDom(target).resize();
+      if (['careerPosters', 'creditsNetwork'].includes(target.dataset.template) && target.dataset.studyWidth !== String(Math.round(contentRect.width))) {
+        const type = target.dataset.template === 'careerPosters' ? 'career' : 'partners';
+        const view = chartView(type, contentRect.width);
+        setAnalysisChart(target.id === 'zoom-chart' ? 'zoom' : type, view.template, view.update, view.height);
+      }
     });
   });
 
@@ -402,7 +411,10 @@
   function showDirector(id) {
     const director = data.directorsById.get(id);
     if (!director) { showSearch(); return; }
-    current = {type: 'director', item: director, films: directorFilms(director), expanded: false};
+    selectedFilmIds = [];
+    activeStudyFilmId = null;
+    selectedStudyDirectorId = null;
+    current = {type: 'director', item: director, films: directorFilms(director)};
     input.value = '';
     renderSearch();
     renderProfile();
@@ -433,7 +445,6 @@
     const isDirector = current.type === 'director';
     byId('explore-insights').hidden = !isDirector;
     byId('director-films').hidden = !isDirector;
-    byId('more-films').hidden = !isDirector || current.expanded || current.films.length <= 10;
     if (isDirector) {
       const image = data.images.directors[item.id];
       const years = item.birthYear ? `${item.birthYear}–${item.deathYear || ''}` : '';
@@ -450,8 +461,7 @@
         <div><strong>${score(item.mean)}</strong><span>加权均分</span></div></div>
         <p class="profile-meta profile-summary">影片均分中位 ${score(median(current.films))} · ${item.firstYear || '—'}–${item.lastYear || '—'}</p>
         `;
-      byId('director-films').innerHTML = (current.expanded ? current.films : current.films.slice(0, 10)).map(filmCard).join('');
-      byId('more-films').textContent = `全部 ${current.films.length} 部作品 ↗`;
+      byId('director-films').innerHTML = current.films.map(filmCard).join('');
       renderInsights();
     } else profile.innerHTML = '';
     renderSavedDirectors();
@@ -482,27 +492,96 @@
     byId('film-inspector').scrollIntoView({block: 'nearest', behavior: reducedMotion ? 'auto' : 'smooth'});
   }
 
-  function setAnalysisChart(key, template, update) {
+  function setAnalysisChart(key, template, update, height = 340) {
+    const element = byId(key === 'filmRatings' ? 'film-rating-chart' : key === 'zoom' ? 'zoom-chart' : 'analysis-' + key);
+    if (key !== 'filmRatings') element.style.height = height + 'px';
     let chart = analysisCharts.get(key);
     if (!chart) {
-      const element = byId(key === 'filmRatings' ? 'film-rating-chart' : key === 'zoom' ? 'zoom-chart' : `analysis-${key}`);
       chart = echarts.init(element, 'vintage');
-      chart.on('click', event => {
-        const point = event.data;
-        if (point?.directorId || point?.movieId) {
-          if (zoomDialog.open) zoomDialog.close();
-          if (point.directorId) showDirector(point.directorId);
-          else showFilm(point.movieId);
-        }
-      });
+      if (key !== 'filmRatings') {
+        chart.on('click', event => {
+          const point = event.data;
+          if (point?.movieIds) selectStudyMovies(point.movieIds, point.directorId);
+          else if (point?.movieId) selectStudyMovies([point.movieId]);
+        });
+        chart.on('mouseover', event => {
+          const point = event.data;
+          if (point?.movieIds) highlightStudyFilms(point.movieIds);
+          else if (point?.movieId) highlightStudyFilms([point.movieId]);
+        });
+        chart.on('globalout', () => highlightStudyFilms(selectedFilmIds));
+      }
       analysisCharts.set(key, chart);
       chartResizeObserver.observe(element);
     }
-    chart.setOption(window.DIRECTOR_TEMPLATES[template], true);
+    if (element.dataset.template !== template) {
+      chart.setOption(window.DIRECTOR_TEMPLATES[template], true);
+      element.dataset.template = template;
+    }
+    element.dataset.studyWidth = String(Math.round(element.getBoundingClientRect().width));
     chart.setOption(update);
     if (reducedMotion) chart.setOption({animation: false});
     chart.resize();
   }
+
+  function highlightStudyFilms(ids) {
+    const selected = new Set(ids);
+    document.querySelectorAll('#director-films [data-film-id]').forEach(card => {
+      card.classList.toggle('is-linked', selected.has(card.dataset.filmId));
+      card.classList.toggle('is-dimmed', selected.size > 0 && !selected.has(card.dataset.filmId));
+    });
+    for (const [key, chart] of analysisCharts) {
+      if (key === 'filmRatings') continue;
+      chart.dispatchAction({type: 'downplay'});
+      const series = chart.getOption().series;
+      series.forEach((item, seriesIndex) => {
+        const pending = (item.data || []).map((point, dataIndex) => ({point, dataIndex}));
+        while (pending.length) {
+          const {point, dataIndex} = pending.pop();
+          if (point.children) pending.push(...point.children.map(child => ({point: child})));
+          if (point.movieIds?.some(id => selected.has(id)) || selected.has(point.movieId)) {
+            chart.dispatchAction({type: 'highlight', seriesIndex,
+              ...(item.type === 'treemap' ? {name: point.name} : {dataIndex})});
+          }
+        }
+        (item.links || []).forEach((link, dataIndex) => {
+          if (link.movieIds?.some(id => selected.has(id))) chart.dispatchAction({type: 'highlight', seriesIndex, dataIndex, dataType: 'edge'});
+        });
+      });
+    }
+  }
+
+  function selectStudyMovies(ids, directorId = null) {
+    selectedFilmIds = [...new Set(ids)];
+    activeStudyFilmId = selectedFilmIds[0] || null;
+    selectedStudyDirectorId = directorId || null;
+    renderStudySelection();
+    highlightStudyFilms(selectedFilmIds);
+  }
+
+  function renderStudySelection() {
+    const film = data.filmsById.get(activeStudyFilmId);
+    const person = data.directorsById.get(selectedStudyDirectorId);
+    byId('study-selection').hidden = !film && !person;
+    byId('study-selection-count').textContent = selectedFilmIds.length + ' 部已选';
+    byId('study-selection-title').textContent = film?.title || person?.name || '';
+    byId('study-view-film').disabled = !film;
+    byId('study-view-director').hidden = !person;
+    byId('study-view-director').textContent = person ? '查看 ' + person.name : '';
+    byId('study-partner').value = selectedStudyDirectorId || '';
+    byId('study-selected-films').innerHTML = selectedFilmIds.map(id => {
+      const item = data.filmsById.get(id), image = data.images.films[id];
+      return '<button type="button" data-study-film="' + id + '" aria-pressed="' + (id === activeStudyFilmId) +
+        '" aria-label="选中 ' + escapeHtml(item.title) + '" title="' + escapeHtml(item.title) + '">' +
+        (image ? '<img src="' + escapeHtml(image) + '" alt="">' : '<span>' + escapeHtml(item.title) + '</span>') +
+        '<span class="study-film-year">' + (item.year || '—') + '</span></button>';
+    }).join('');
+    byId('zoom-selection').hidden = !film && !person;
+    byId('zoom-selected-title').textContent = film?.title || person?.name || '';
+    byId('zoom-view-film').disabled = !film;
+    byId('zoom-view-director').hidden = !person;
+  }
+
 
   function renderSavedDirectors() {
     byId('saved-directors').innerHTML = savedDirectors.length ? savedDirectors.map(director => {
@@ -518,6 +597,7 @@
         <button type="button" data-toggle-target="${director.id}" ${!primaryId || (targetIds.length === 2 && targetIndex < 0) ? 'disabled' : ''}>${targetIndex >= 0 ? '移出对比' : '加入对比'}</button>` : ''}</div></article>`;
     }).join('') : '<p class="saved-empty">尚未收录</p>';
     const saved = current?.type === 'director' && savedDirectors.some(director => director.id === current.item.id);
+    byId('save-director').hidden = current?.type !== 'director';
     byId('save-director').disabled = saved;
     byId('save-director').textContent = saved ? '已在导演架' : '＋ 收进导演架';
     const role = current?.item.id === primaryId ? '主导演' : targetIds.includes(current?.item.id) ? `对比 ${targetIds.indexOf(current.item.id) + 1}` : '';
@@ -566,123 +646,204 @@
       ? [primaryId, ...targetIds].map(id => data.directorsById.get(id)) : [current.item];
     explorer.classList.toggle('is-comparing', insightScope === 'comparison');
     insightGroups = directors.map((director, index) => {
-      const films = directorFilms(director);
-      const genres = new Map();
+      const films = directorFilms(director), genres = new Map();
       films.forEach(film => film.genres.forEach(genre => genres.set(genre, (genres.get(genre) || 0) + 1)));
-      const tagCount = [...genres.values()].reduce((sum, value) => sum + value, 0);
+      const total = [...genres.values()].reduce((sum, count) => sum + count, 0);
       return {director, films, rated: films.filter(film => film.mean != null), genres,
-        shares: new Map([...genres].map(([name, count]) => [name, count / tagCount * 100])),
-        partners: data.partners[director.index].slice().sort((a, b) => b.count - a.count),
-        role: insightScope === 'comparison' ? index ? `对比 ${index}` : '主导演' : '当前'};
+        shares: new Map([...genres].map(([name, count]) => [name, count / total * 100])),
+        partners: data.partners[director.index],
+        role: insightScope === 'comparison' ? index ? '对比 ' + index : '主导演' : '当前'};
     });
-    byId('insight-director').textContent = current.item.name;
+    byId('insight-director').textContent = insightScope === 'comparison' ? '主导演对比' : current.item.name;
     document.querySelectorAll('[data-insight-scope]').forEach(button => {
       button.disabled = button.dataset.insightScope === 'comparison' && !ready;
       button.setAttribute('aria-pressed', String(button.dataset.insightScope === insightScope));
     });
-    const legend = insightGroups.map((group, index) => `<span class="cohort-${index}"><i></i>${group.role} · ${escapeHtml(group.director.name)}</span>`).join('');
+    const legend = insightGroups.map((group, index) => '<span class="cohort-' + index + '"><i></i>' +
+      group.role + ' · ' + escapeHtml(group.director.name) + '</span>').join('');
     byId('cohort-legend').innerHTML = legend;
     byId('zoom-legend').innerHTML = legend;
-    document.querySelectorAll('select[data-chart-mode]').forEach(select => { select.value = String(chartModes[insightScope][select.dataset.chartMode]); });
+    document.querySelectorAll('button[data-chart-mode]').forEach(button =>
+      button.setAttribute('aria-pressed', String(Number(button.dataset.modeValue) === chartModes[button.dataset.chartMode])));
+    byId('threshold-control').hidden = !chartModes.ratings;
+    byId('career-metric-control').hidden = !!chartModes.career;
+    byId('genre-period-control').hidden = !chartModes.genres;
+    byId('rating-threshold-value').textContent = ratingThreshold.toFixed(2);
+    document.querySelectorAll('[data-career-metric]').forEach(button =>
+      button.setAttribute('aria-pressed', String(button.dataset.careerMetric === careerMetric)));
     for (const type of Object.keys(viewLabels)) {
-      const view = chartView(type);
-      const card = byId(`analysis-${type}`).closest('.insight');
-      card.dataset.mode = chartModes[insightScope][type];
-      if (type === 'partners' && chartModes[insightScope].partners) card.style.setProperty('--matrix-rows', view.update.yAxis[0].data.length);
-      byId(`metric-${type}`).textContent = view.metric;
-      byId(`empty-${type}`).hidden = !view.empty;
-      byId(`empty-${type}`).textContent = view.empty;
-      byId(`analysis-${type}`).hidden = !!view.empty;
-      if (!view.empty) setAnalysisChart(type, view.template, view.update);
+      const view = chartView(type), element = byId('analysis-' + type);
+      element.closest('.insight').dataset.mode = chartModes[type];
+      byId('metric-' + type).textContent = view.metric;
+      byId('empty-' + type).hidden = !view.empty;
+      byId('empty-' + type).textContent = view.empty;
+      element.hidden = !!view.empty;
+      if (!view.empty) setAnalysisChart(type, view.template, view.update, view.height);
+      if (type === 'partners') {
+        byId('study-partner').innerHTML = '<option value="">定位署名导演</option>' + view.people.map(person =>
+          '<option value="' + person.id + '"' + (person.id === selectedStudyDirectorId ? ' selected' : '') + '>' +
+          escapeHtml(person.name) + '</option>').join('');
+        byId('study-partner').disabled = !view.people.length;
+      }
     }
+    renderStudySelection();
     if (zoomDialog.open) renderZoom();
+    highlightStudyFilms(selectedFilmIds);
   }
 
-  function chartView(type) {
+  function chartView(type, width) {
     const groups = insightGroups;
-    const series = build => Array.from({length: 3}, (_, index) => ({name: groups[index]?.director.name || '', data: groups[index] ? build(groups[index], index) : []}));
     if (type === 'ratings') {
       const count = groups.reduce((sum, group) => sum + group.rated.length, 0);
-      const metric = groups.map(group => `${groups.length > 1 ? group.role + ' ' : ''}${group.rated.length} 部`).join(' · ');
-      if (!chartModes[insightScope].ratings) return {template: 'ratingsDots', metric: `${metric}\n◆ 中位数 ━ 中间 50%`, empty: count ? '' : '暂无作品均分', update: {
-        yAxis: [{data: groups.map(group => group.role)}], series: series(group => {
-          const points = group.rated.map((film, index) => ({value: [film.mean, index, film.year, 0], name: film.title,
-            mean: film.mean, year: film.year, count: film.ratingCount, movieId: film.id}));
-          if (points.length) {
-            const sorted = group.rated.slice().sort((a, b) => a.mean - b.mean);
-            const half = Math.floor(sorted.length / 2);
-            points.push({value: [median(sorted), median(half ? sorted.slice(0, half) : sorted),
-              median(half ? sorted.slice(-half) : sorted), 1], statistic: true});
-          }
-          return points;
-        })}};
-      return {template: groups.length > 1 ? 'ratingsShare' : 'ratingsCurve', metric, empty: count ? '' : '暂无作品均分', update: {series: series(group => {
-        const bins = Array(9).fill(0);
-        group.rated.forEach(film => bins[Math.min(8, Math.floor((film.mean - .5) / .5))]++);
-        return bins.map((amount, index) => ({value: [.75 + index * .5, groups.length > 1 ? group.rated.length ? amount / group.rated.length * 100 : 0 : amount],
-          bin: `${(index + 1) / 2}–${(index + 2) / 2}`, count: amount, share: group.rated.length ? amount / group.rated.length * 100 : 0}));
-      })}};
+      const metric = groups.map(group => group.role + ' ' + group.rated.length + ' 部有评分作品').join(' · ');
+      if (!chartModes.ratings) {
+        const boxes = [], ticks = [];
+        groups.forEach((group, role) => {
+          const sorted = group.rated.slice().sort((a, b) => a.mean - b.mean), half = Math.floor(sorted.length / 2);
+          if (!sorted.length) { boxes.push({value: [null, null, null, null, null], sample: 0, name: group.director.name, movieIds: []}); return; }
+          const q1 = median(half ? sorted.slice(0, half) : sorted), q3 = median(half ? sorted.slice(-half) : sorted);
+          const lower = sorted.find(film => film.mean >= q1 - 1.5 * (q3 - q1)).mean;
+          const upper = sorted.findLast(film => film.mean <= q3 + 1.5 * (q3 - q1)).mean;
+          boxes.push({name: group.director.name, value: [lower, q1, median(sorted), q3, upper], statistic: true,
+            sample: sorted.length, movieIds: sorted.filter(film => film.mean >= q1 && film.mean <= q3).map(film => film.id)});
+          sorted.forEach((film, index) => ticks.push({name: film.title, movieIds: [film.id],
+            mean: film.mean, year: film.year, value: [film.mean, role, index]}));
+        });
+        return {template: 'ratingsBox', metric, empty: count ? '' : '暂无作品评分', height: 260 + groups.length * 68,
+          update: {yAxis: [{data: groups.map(group => group.role)}], series: [{data: boxes}, {data: ticks}]}};
+      }
+      const plots = Array.from({length: 3}, (_, role) => {
+        const group = groups[role];
+        if (!group || !group.rated.length) return {name: group?.director.name || '', data: []};
+        const values = [...new Set([.5, ...group.rated.map(film => film.mean), ratingThreshold, 5])].sort((a, b) => a - b);
+        return {name: group.director.name, data: values.map(value => {
+          const films = group.rated.filter(film => film.mean >= value);
+          return {name: group.director.name, value: [value, group.rated.length ? films.length / group.rated.length * 100 : 0],
+            count: films.length, total: group.rated.length, movieIds: films.map(film => film.id)};
+        }), ...(role === 0 ? {markLine: {data: [{xAxis: ratingThreshold}]}} : {})};
+      });
+      return {template: 'ratingsThreshold', metric, empty: count ? '' : '暂无作品评分', height: 350, update: {series: plots}};
     }
+
     if (type === 'career') {
-      const count = groups.reduce((sum, group) => sum + group.films.filter(film => film.year && (!chartModes[insightScope].career || film.mean != null)).length, 0);
-      const metric = groups.map(group => `${groups.length > 1 ? group.role + ' ' : ''}${group.films.filter(film => film.year && (!chartModes[insightScope].career || film.mean != null)).length} 部`).join(' · ');
-      return {template: chartModes[insightScope].career ? 'careerScores' : 'careerVotes', metric, empty: count ? '' : '暂无作品年份', update: {series: series(group => {
-        const films = group.films.filter(film => film.year && (!chartModes[insightScope].career || film.mean != null));
-        const peak = films.slice().sort((a, b) => b.ratingCount - a.ratingCount)[0];
-        return films.map(film => ({value: [film.year, chartModes[insightScope].career ? film.mean : film.ratingCount, film === peak ? 1 : 0],
-          name: film.title, year: film.year, count: film.ratingCount, mean: film.mean, movieId: film.id}));
-      })}};
+      if (!chartModes.career) {
+        const template = window.DIRECTOR_TEMPLATES.careerPosters;
+        const prepared = template.prepareData(groups.map(group => ({role: group.role,
+          films: group.films.map(film => ({...film, image: data.images.films[film.id] || '', ratio: template.posterRatios[film.id]}))})),
+          width || byId('analysis-career').getBoundingClientRect().width, careerMetric);
+        const count = prepared.nodes.length;
+        return {template: 'careerPosters', metric: count + ' 部 · 下标' + (careerMetric === 'mean' ? '均分 / 5' : '评分记录'),
+          empty: count ? '' : '暂无上映年份', height: prepared.height + 92, update: {
+            xAxis: [{min: prepared.first, max: prepared.last}], yAxis: [{max: prepared.height}],
+            series: [{data: prepared.nodes}, {data: prepared.labels}]}};
+      }
+      const rows = [], labels = [];
+      groups.forEach((group, role) => {
+        const films = group.films.filter(film => film.year != null).sort((a, b) => a.year - b.year || b.ratingCount - a.ratingCount);
+        films.slice(1).forEach((film, index) => {
+          const previous = films[index], row = rows.length;
+          labels.push(group.role + ' · ' + previous.year + '→' + film.year);
+          rows.push({name: previous.title + ' → ' + film.title, director: group.director.name,
+            before: previous.title, after: film.title, movieIds: [previous.id, film.id],
+            value: [previous.year, film.year, row, role, film.year - previous.year]});
+        });
+      });
+      return {template: 'careerGaps', metric: rows.length + ' 段上映年间隔', empty: rows.length ? '' : '至少两部已知年份作品才有间隔',
+        height: Math.max(290, rows.length * 34 + 100), update: {yAxis: [{data: labels}], series: [{data: rows}]}};
     }
+
     if (type === 'partners') {
-      const totals = new Map();
-      groups.forEach(group => group.partners.forEach(partner => totals.set(partner.director.id, (totals.get(partner.director.id) || 0) + partner.count)));
-      const ids = [...totals].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([id]) => id);
-      const metric = `${ids.length < totals.size ? '前 ' : ''}${ids.length} 位合作导演`;
-      const maximum = Math.max(1, ...groups.flatMap(group => group.partners.map(partner => partner.count)));
-      if (chartModes[insightScope].partners) return {template: 'partnersMatrix', metric, empty: ids.length ? '' : '暂无共同执导记录', update: {
-        xAxis: [{data: groups.map(group => group.role)}], yAxis: [{data: ids.map(id => data.directorsById.get(id).name)}],
-        visualMap: {max: maximum, text: [`${maximum} 部`, '0 部']},
-        series: [{data: groups.flatMap((group, column) => ids.map((id, row) => ({value: [column, row, group.partners.find(partner => partner.director.id === id)?.count || 0],
-          director: group.director.name, partner: data.directorsById.get(id).name, directorId: id})))}]}};
-      const nodes = new Map(groups.map((group, index) => [group.director.id, {id: group.director.id, name: group.director.name, directorId: group.director.id, category: index}]));
-      const links = new Map();
-      groups.forEach(group => group.partners.slice(0, 8).forEach(partner => {
-        if (!nodes.has(partner.director.id)) nodes.set(partner.director.id, {id: partner.director.id, name: partner.director.name, directorId: partner.director.id, category: 3});
-        const key = [group.director.id, partner.director.id].sort().join('|');
-        links.set(key, {source: group.director.id, target: partner.director.id, value: partner.count});
+      const groupIds = new Set(groups.map(group => group.director.id)), links = new Map();
+      groups.forEach((group, roleIndex) => group.partners.forEach(partner => {
+        const pair = data.collaborations[partner.pairIndex], first = data.directors[pair[0]], second = data.directors[pair[1]];
+        const key = [first.id, second.id].sort().join('|');
+        if (!links.has(key)) links.set(key, {source: first.id, target: second.id, count: pair[2], roleIndex,
+          name: first.name + ' × ' + second.name, movieIds: pair[4].map(index => data.films[index].id)});
       }));
-      const others = [...nodes.values()].filter(node => !groups.some(group => group.director.id === node.id));
-      const ordered = Array(nodes.size);
-      groups.forEach((group, index) => { ordered[Math.floor(index * nodes.size / groups.length)] = nodes.get(group.director.id); });
-      for (let index = 0; index < ordered.length; index++) if (!ordered[index]) ordered[index] = others.shift();
-      return {template: ordered.length > 7 ? 'partnersOrbit' : 'partnersNetwork', metric: `${links.size} 组共创关系`, empty: links.size ? '' : '暂无共同执导记录', update: {
-        series: [{data: ordered.map(node => ({...node, showLabel: nodes.size <= 7 || ids.slice(0, 3).includes(node.id)})), links: [...links.values()]}]}};
+      const relations = [...links.values()], ids = new Set(groups.map(group => group.director.id));
+      relations.forEach(link => { ids.add(link.source); ids.add(link.target); });
+      const people = [...ids].map(id => {
+        const director = data.directorsById.get(id), roleIndex = groups.findIndex(group => group.director.id === id);
+        return {id, name: director.name, directorId: id, ...(roleIndex >= 0 ? {roleIndex} : {}),
+          movieIds: [...new Set(relations.filter(link => link.source === id || link.target === id).flatMap(link => link.movieIds))]};
+      });
+      const filmIds = [...new Set(relations.flatMap(link => link.movieIds))];
+      const metric = filmIds.length + ' 部共导影片 · ' + relations.length + ' 组搭档';
+      const options = people.filter(person => relations.some(link => link.source === person.id || link.target === person.id));
+      if (chartModes.partners) {
+        const prepared = relations.length ? window.DIRECTOR_TEMPLATES.creditsChord.prepareData(options, relations) : {ribbons: [], nodes: []};
+        return {template: 'creditsChord', metric, people: options, empty: relations.length ? '' : '暂无联合执导记录',
+          height: 520, update: {series: [{data: prepared.ribbons}, {data: prepared.nodes}]}};
+      }
+      const films = filmIds.map(id => {
+        const film = data.filmsById.get(id);
+        return {id: 'film-' + id, name: film.title, image: data.images.films[id] || '', movieIds: [id]};
+      });
+      const graphLinks = [];
+      filmIds.forEach(id => {
+        const film = data.filmsById.get(id), credited = data.filmDirectors[film.index];
+        credited.forEach(director => {
+          if (!ids.has(director.id)) return;
+          const role = groups.findIndex(group => group.director.id === director.id), focused = groupIds.has(director.id);
+          graphLinks.push({source: focused ? director.id : 'film-' + id, target: focused ? 'film-' + id : director.id,
+            name: director.name + ' · ' + film.title, movieIds: [id], roleIndex: role >= 0 ? role : 0});
+        });
+      });
+      const prepared = window.DIRECTOR_TEMPLATES.creditsNetwork.prepareData(
+        people.filter(person => groupIds.has(person.id)), films, people.filter(person => !groupIds.has(person.id)), graphLinks,
+        width || byId('analysis-partners').getBoundingClientRect().width);
+      return {template: 'creditsNetwork', metric, people: options, empty: relations.length ? '' : '暂无联合执导记录', height: prepared.height,
+        update: {series: [{data: prepared.nodes, links: prepared.links}]}};
     }
-    const totals = new Map();
-    groups.forEach(group => group.genres.forEach((amount, name) => totals.set(name, (totals.get(name) || 0) + amount)));
-    let names = [...totals].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([name]) => name);
-    const maximum = Math.max(0, ...groups.flatMap(group => names.map(name => group.shares.get(name) || 0)));
-    const scale = Math.max(20, Math.ceil(maximum / 10) * 10);
-    const typeCount = names.length < totals.size ? `前 ${names.length} / ${totals.size} 类` : `${totals.size} 种类型`;
-    const metric = `${typeCount} · 外圈 ${scale}%`;
-    if (chartModes[insightScope].genres) return {template: 'genresRank', metric: typeCount, empty: names.length ? '' : '暂无类型记录', update: {
-      xAxis: [{max: scale, interval: scale / 2}], yAxis: [{data: names}], series: series(group => names.map((name, index) => ({name, value: [index, (group.shares.get(name) || 0), groups.length]})))}};
-    if (names.length < 3) names = [...names, ...pageData.C7['类型'].filter(name => !names.includes(name))].slice(0, 3);
-    return {template: 'genresRadar', metric, empty: totals.size ? '' : '暂无类型记录', update: {
-      radar: {indicator: names.map(name => ({name: groups.length === 1 ? `${name}\n${(groups[0].shares.get(name) || 0).toFixed(1)}%` : name, max: scale}))},
-      series: series(group => [{name: group.director.name, genres: names, value: names.map(name => (group.shares.get(name) || 0))}])}};
+
+    const order = window.DIRECTOR_TEMPLATES.genresBlocks.genreOrder;
+    const names = order.filter(name => groups.some(group => group.genres.has(name)));
+    const metric = groups.map(group => group.role + ' ' + group.genres.size + ' 类').join(' · ');
+    if (!chartModes.genres) {
+      const base = window.DIRECTOR_TEMPLATES.genresBlocks;
+      return {template: 'genresBlocks', metric, empty: names.length ? '' : '暂无类型记录', height: groups.length > 1 ? 430 : 340,
+        update: {series: [{data: groups.map((group, role) => ({name: group.director.name, value: group.genres.size ? 100 : 0,
+          director: group.director.name, movieIds: group.films.map(film => film.id), itemStyle: base.roleStyles[role],
+          children: names.map(genre => ({name: group.director.name + ' / ' + genre, genre, director: group.director.name,
+            value: group.shares.get(genre) || 0, itemStyle: base.genreStyles[genre],
+            movieIds: group.films.filter(film => film.genres.includes(genre)).map(film => film.id)}))}))}]}};
+    }
+    const years = groups.flatMap(group => group.films.filter(film => film.year != null && film.genres.length).map(film => film.year));
+    const first = Math.floor(Math.min(...years) / genrePeriod) * genrePeriod;
+    const last = Math.floor(Math.max(...years) / genrePeriod) * genrePeriod;
+    const periods = [];
+    for (let year = first; year <= last; year += genrePeriod) periods.push(year);
+    const plots = [];
+    for (let role = 0; role < 3; role++) {
+      const group = groups[role];
+      const bins = periods.map(year => group ? group.films.filter(film => film.year >= year && film.year < year + genrePeriod) : []);
+      order.forEach(genre => plots.push({data: group ? bins.map((films, index) => {
+        const tagged = films.filter(film => film.genres.includes(genre)), total = films.reduce((sum, film) => sum + film.genres.length, 0);
+        return {name: genre, genre, director: group.director.name, period: periods[index] + '–' + (periods[index] + genrePeriod - 1),
+          value: [index, total ? tagged.length / total * 100 : null], movieIds: tagged.map(film => film.id)};
+      }) : []}));
+    }
+    return {template: 'genresHistory', metric, empty: years.length ? '' : '暂无可定位的类型年份',
+      height: groups.length * window.DIRECTOR_TEMPLATES.genresHistory.facetHeight + 70, update: {
+        legend: {data: names},
+        xAxis: Array.from({length: 3}, (_, index) => ({data: groups[index] ? periods.map(year => genrePeriod === 1 ? String(year) : year + '–' + String(year + genrePeriod - 1).slice(-2)) : [], show: index < groups.length})),
+        yAxis: Array.from({length: 3}, (_, index) => ({name: groups[index]?.role || '', show: index < groups.length})),
+        series: plots}};
   }
 
   function renderZoom() {
-    const view = chartView(zoomType);
+    const view = chartView(zoomType, byId('zoom-chart').getBoundingClientRect().width);
     byId('zoom-title').textContent = viewLabels[zoomType].title;
     byId('zoom-metric').textContent = view.metric;
-    byId('zoom-mode').innerHTML = viewLabels[zoomType].modes.map((name, index) => `<option value="${index}" ${chartModes[insightScope][zoomType] === index ? 'selected' : ''}>${name}</option>`).join('');
+    byId('zoom-mode').innerHTML = viewLabels[zoomType].modes.map((name, index) =>
+      '<option value="' + index + '"' + (chartModes[zoomType] === index ? ' selected' : '') + '>' + name + '</option>').join('');
     byId('zoom-mode').dataset.chartMode = zoomType;
     byId('zoom-empty').hidden = !view.empty;
     byId('zoom-empty').textContent = view.empty;
     byId('zoom-chart').hidden = !!view.empty;
-    if (!view.empty) setAnalysisChart('zoom', view.template, view.update);
+    if (!view.empty) setAnalysisChart('zoom', view.template, view.update, view.height);
+    renderStudySelection();
+    highlightStudyFilms(selectedFilmIds);
   }
 
   function openHash() {
@@ -789,11 +950,6 @@
       directorId: film.closest('#collab-pair-films') ? collaborationId
         : film.closest('#chronicle-period-films') ? chronicleId : undefined});
   });
-  byId('more-films').addEventListener('click', () => {
-    current.expanded = true;
-    renderProfile();
-    if (current.selectedFilm) renderFilm(data.filmsById.get(current.selectedFilm));
-  });
   byId('save-director').addEventListener('click', () => {
     savedDirectors.push(current.item);
     renderSavedDirectors();
@@ -822,15 +978,37 @@
   document.addEventListener('click', event => {
     const scopeButton = event.target.closest('[data-insight-scope]');
     if (scopeButton && !scopeButton.disabled) { insightScope = scopeButton.dataset.insightScope; renderInsights(); }
+    const modeButton = event.target.closest('button[data-chart-mode]');
+    if (modeButton) { chartModes[modeButton.dataset.chartMode] = Number(modeButton.dataset.modeValue); renderInsights(); }
+    const metricButton = event.target.closest('[data-career-metric]');
+    if (metricButton) { careerMetric = metricButton.dataset.careerMetric; renderInsights(); }
+    const selectedFilm = event.target.closest('[data-study-film]');
+    if (selectedFilm) { activeStudyFilmId = selectedFilm.dataset.studyFilm; renderStudySelection(); }
     const zoomButton = event.target.closest('[data-zoom]');
     if (zoomButton) { zoomType = zoomButton.dataset.zoom; zoomDialog.showModal(); document.body.classList.add('chart-open'); renderZoom(); }
   });
   document.addEventListener('change', event => {
     const type = event.target.dataset.chartMode;
     if (!type) return;
-    chartModes[insightScope][type] = Number(event.target.value);
-    document.querySelectorAll(`[data-chart-mode="${type}"]`).forEach(select => { select.value = event.target.value; });
+    chartModes[type] = Number(event.target.value);
     renderInsights();
+  });
+  byId('rating-threshold').addEventListener('input', event => { ratingThreshold = Number(event.target.value); renderInsights(); });
+  byId('genre-period').addEventListener('change', event => { genrePeriod = Number(event.target.value); renderInsights(); });
+  byId('study-partner').addEventListener('change', event => {
+    const person = chartView('partners').people.find(person => person.id === event.target.value);
+    if (person) selectStudyMovies(person.movieIds, person.id);
+  });
+  byId('study-clear').addEventListener('click', () => selectStudyMovies([]));
+  for (const id of ['study-view-film', 'zoom-view-film']) byId(id).addEventListener('click', () => {
+    if (zoomDialog.open) zoomDialog.close();
+    const directors = data.filmDirectors[data.filmsById.get(activeStudyFilmId).index];
+    const context = directors.find(director => director.id === current.item.id) || directors[0];
+    openSearch({type: 'film', id: activeStudyFilmId, directorId: context?.id});
+  });
+  for (const id of ['study-view-director', 'zoom-view-director']) byId(id).addEventListener('click', () => {
+    if (zoomDialog.open) zoomDialog.close();
+    showDirector(selectedStudyDirectorId);
   });
   byId('close-chart').addEventListener('click', () => zoomDialog.close());
   zoomDialog.addEventListener('close', () => document.body.classList.remove('chart-open'));

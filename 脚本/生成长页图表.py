@@ -9,7 +9,7 @@ from collections import Counter
 from pathlib import Path
 
 from pyecharts import options as opts
-from pyecharts.charts import Custom, Graph, HeatMap, Line, Parallel, Radar, Scatter
+from pyecharts.charts import Boxplot, Custom, Graph, HeatMap, Line, Parallel, Pie, Scatter, TreeMap
 from pyecharts.commons.utils import JsCode
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -442,174 +442,227 @@ def build_score_distribution(single_film=False):
 
 
 def build_templates():
-    text = {'fontFamily': 'Georgia, Cinema WenKai, serif', 'fontSize': 14, 'color': '#c6b8a6'}
+    palette = COLORS + ['#787464', '#cc7e63', '#724e58', '#4b565b']
+    with (ROOT / '加工数据/电影.csv').open(encoding='utf-8-sig', newline='') as stream:
+        genres = sorted({kind for row in csv.DictReader(stream) for kind in row['类型中文'].split('|')})
+    with (ROOT / '加工数据/导演图片清单.csv').open(encoding='utf-8-sig', newline='') as stream:
+        ratios = {row['编号']: round(int(row['宽']) / int(row['高']), 4)
+                  for row in csv.DictReader(stream) if row['类型'] == '电影海报'}
+    text = {'fontFamily': 'Microsoft YaHei', 'fontSize': 14, 'color': '#c6b8a6'}
 
-    # Each dot remains one film; the diamond and rail show median and middle 50%.
-    dots = Custom()
+    box = Boxplot()
+    box.add_xaxis([]).add_yaxis('口碑范围', [])
+    box.options['color'] = COLORS[:3]
+    box.options['xAxis'] = [axis('影片均分 / 5', min=.5, max=5, interval=.5, nameLocation='middle', nameGap=30)]
+    box.options['yAxis'] = [axis(kind='category', data=[], inverse=True, axisLabel=text)]
+    box.options['series'][0].update({'layout': 'horizontal', 'boxWidth': [16, 26],
+        'itemStyle': {'color': JsCode("function(p){return " + repr(COLORS[:3]) + "[p.dataIndex]+'44';}"),
+                      'borderColor': JsCode("function(p){return " + repr(COLORS[:3]) + "[p.dataIndex];}"), 'borderWidth': 2}})
+    ticks = Custom()
+    ticks.add('逐片刻度', render_item=JsCode(
+        "function(p,api){var q=api.coord([api.value(0),api.value(1)]),c=" + repr(COLORS[:3]) + "[api.value(1)];"
+        "return {type:'rect',shape:{x:q[0]-2,y:q[1]+25+(api.value(2)%3)*4,width:4,height:9},"
+        "style:{fill:c,opacity:.8},emphasis:{style:{fill:'#f6ecdd',shadowBlur:8,shadowColor:c}}};}"), data=[])
+    ticks.options['series'][0]['encode'] = {'x': 0, 'y': 1}
+    box.options['series'].extend(ticks.options['series'])
+
+    threshold = Line()
+    threshold.add_xaxis([])
     for index, color in enumerate(COLORS[:3]):
-        dots.add(f'导演{index}', render_item=JsCode(
-            "function(p,api){var point=api.coord([api.value(0),p.seriesIndex]);"
-            "if(api.value(3)===1){var left=api.coord([api.value(1),p.seriesIndex])[0],"
-            "right=api.coord([api.value(2),p.seriesIndex])[0],y=point[1]-36;return {type:'group',children:["
-            "{type:'line',shape:{x1:left,y1:y,x2:right,y2:y},style:{stroke:'" + color + "',lineWidth:4,opacity:.6}},"
-            "{type:'polygon',shape:{points:[[point[0],y-6],[point[0]+5,y],[point[0],y+6],[point[0]-5,y]]},"
-            "style:{fill:'#f6ecdd',stroke:'#171214',lineWidth:1.5}},"
-            "{type:'text',style:{x:point[0],y:y-20,text:Number(api.value(0)).toFixed(2),"
-            "fontSize:19,fontFamily:'Georgia',fill:'#f6ecdd',align:'center',verticalAlign:'middle'}}]};}"
-            "return {type:'circle',shape:{cx:point[0],cy:point[1]+(api.value(1)%5-2)*8,r:4.5},"
-            "style:{fill:'" + color + "',stroke:'#171214',lineWidth:1,opacity:.9}};}"), data=[])
-    dots.options['xAxis'] = [axis('作品均分', min=.5, max=5, interval=.5, nameLocation='middle', nameGap=28,
-        axisLabel={**TEXT, 'formatter': JsCode("function(v){return Number.isInteger(v)?String(v):'';}")})]
-    dots.options['yAxis'] = [axis(kind='category', data=[], inverse=True, axisLabel={**text,
-        'formatter': JsCode("function(v){return v==='当前'?'':v;}")})]
-    dots.options['series'] = [{**series, 'encode': {'x': 0}, 'clip': False} for series in dots.options['series']]
+        threshold.add_yaxis('', [], color=color, is_step='start', symbol=['circle', 'diamond', 'triangle'][index],
+            symbol_size=6, label_opts=opts.LabelOpts(is_show=False),
+            linestyle_opts=opts.LineStyleOpts(width=2.5, type_=['solid', 'dashed', 'dotted'][index]),
+            areastyle_opts=opts.AreaStyleOpts(opacity=.05))
+    threshold.options['xAxis'] = [axis('评分门槛 / 5', min=.5, max=5, interval=.5, nameLocation='middle', nameGap=30)]
+    threshold.options['yAxis'] = [axis('达到门槛的作品', min=0, max=100, interval=25,
+        axisLabel={**text, 'formatter': '{value}%'})]
+    threshold.options['series'][0]['markLine'] = {'silent': True, 'symbol': ['none', 'none'],
+        'lineStyle': {'color': '#f0dfbd', 'width': 1, 'type': 'dashed'},
+        'label': {**text, 'color': '#f0dfbd', 'formatter': JsCode("function(p){return '≥ '+Number(p.value).toFixed(2);}")},
+        'data': [{'xAxis': 4}]}
 
-    profiles = Line()
-    profiles.add_xaxis([])
-    for index, color in enumerate(COLORS[:3]):
-        profiles.add_yaxis('', [], color=color, symbol=['circle', 'diamond', 'triangle'][index], symbol_size=6,
-            is_step='middle', label_opts=opts.LabelOpts(is_show=False),
-            linestyle_opts=opts.LineStyleOpts(width=2, type_=['solid', 'dashed', 'dotted'][index]),
-            areastyle_opts=opts.AreaStyleOpts(opacity=.06))
-    profiles.options['xAxis'] = [axis('作品均分', min=.5, max=5, interval=.5, nameLocation='middle', nameGap=28,
-        axisLabel={**TEXT, 'formatter': JsCode("function(v){return Number.isInteger(v)?String(v):'';}")})]
-    profiles.options['yAxis'] = [axis('作品数', min=0, minInterval=1, boundaryGap=[0, .15])]
+    posters = Custom()
+    posters.add('发行作品', render_item=JsCode(
+        "function(p,api){var q=api.coord([api.value(0),api.value(1)]),c=" + repr(COLORS[:3]) + "[api.value(2)],"
+        "image=api.value(4),ratio=api.value(5),w=42,h=62,children=["
+        "{type:'rect',shape:{x:q[0]-25,y:q[1]-37,width:50,height:74,r:2},"
+        "style:{fill:'#100d0e',stroke:c,lineWidth:1.5},emphasis:{style:{stroke:'#f6ecdd',lineWidth:2,shadowBlur:12,shadowColor:c}}}];"
+        "if(image){if(ratio>w/h)h=w/ratio;else w=h*ratio;children.push({type:'image',style:{image:image,"
+        "x:q[0]-w/2,y:q[1]-h/2,width:w,height:h}});}else children.push({type:'text',style:{"
+        "x:q[0],y:q[1],text:'▥',fill:c,fontSize:24,align:'center',verticalAlign:'middle'}});"
+        "children.push({type:'text',style:{x:q[0],y:q[1]+48,text:api.value(3),"
+        "fontSize:14,fontFamily:'Microsoft YaHei',fill:'#f6ecdd',align:'center',verticalAlign:'middle'}});"
+        "return {type:'group',children:children};}"), data=[])
+    posters.options['xAxis'] = [axis('上映年份', min='dataMin', max='dataMax', minInterval=1, position='top',
+        axisLabel={**text, 'hideOverlap': True, 'formatter': JsCode('function(v){return String(v);}')})]
+    posters.options['yAxis'] = [axis(show=False, inverse=True, min=0, max=144)]
+    role_labels = Custom()
+    role_labels.add('研究对象', render_item=JsCode(
+        "function(p,api){return {type:'text',silent:true,style:{x:6,y:api.coord([0,api.value(0)])[1],"
+        "text:api.value(1),fontSize:14,fontFamily:'Microsoft YaHei',fill:" + repr(COLORS[:3]) + "[p.dataIndex],"
+        "verticalAlign:'middle'}};}"), data=[])
+    role_labels.options['series'][0]['clip'] = False
+    posters.options['series'].extend(role_labels.options['series'])
+    posters.options['posterRatios'] = ratios
+    posters.options['prepareData'] = JsCode(
+        "function(groups,width,metric){var all=groups.flatMap(function(g){return g.films.filter(function(f){return f.year!==null;});}),"
+        "first=Math.min.apply(null,all.map(function(f){return f.year;})),last=Math.max.apply(null,all.map(function(f){return f.year;})),"
+        "span=Math.max(1,last-first+2),offset=0,nodes=[],labels=[];"
+        "groups.forEach(function(g,role){var lanes=[],start=offset,films=g.films.filter(function(f){return f.year!==null;})"
+        ".slice().sort(function(a,b){return a.year-b.year||b.ratingCount-a.ratingCount;});"
+        "films.forEach(function(f){var x=(f.year-first+1)/span*Math.max(240,width-104),lane=lanes.findIndex(function(end){return x-end>=62;});"
+        "if(lane<0)lane=lanes.length;lanes[lane]=x;"
+        "nodes.push({name:f.title,movieId:f.id,movieIds:[f.id],year:f.year,mean:f.mean,count:f.ratingCount,"
+        "value:[f.year,offset+48+lane*108,role,metric==='mean'?(f.mean===null?'—':f.mean.toFixed(2)):"
+        "(f.ratingCount>=10000?(f.ratingCount/10000).toFixed(1)+'万':String(f.ratingCount)),f.image||'',f.ratio||1]});});"
+        "offset+=Math.max(108,lanes.length*108)+24;labels.push({value:[(start+offset)/2,g.role]});});"
+        "return {nodes:nodes,labels:labels,height:Math.max(132,offset),first:first-1,last:last+1};}")
 
-    # Stems locate individual films in time without connecting missing years.
-    career = Custom()
-    for color in COLORS[:3]:
-        career.add('', render_item=JsCode(
-            "function(p,api){var point=api.coord([api.value(0),api.value(1)]),base=api.coord([api.value(0),0]);"
-            "var children=[{type:'line',shape:{x1:point[0],y1:base[1],x2:point[0],y2:point[1]},"
-            "style:{stroke:'" + color + "',lineWidth:1,opacity:.22}},"
-            "{type:'circle',shape:{cx:point[0],cy:point[1],r:4.5},"
-            "style:{fill:'" + color + "',stroke:'#171214',lineWidth:1}}];"
-            "if(api.value(2)===1)children.push({type:'text',style:{x:point[0],y:point[1]-15,"
-            "text:api.value(0)+' · '+(api.value(1)>=10000?(api.value(1)/10000).toFixed(1)+'万':api.value(1)),"
-            "fontSize:14,fontFamily:'Georgia, Cinema WenKai, serif',fill:'#f6ecdd',align:'center',verticalAlign:'bottom'}});"
-            "return {type:'group',children:children};}"), data=[])
-    career.options['series'] = [{**series, 'encode': {'x': 0, 'y': 1}, 'clip': False} for series in career.options['series']]
-    career.options['xAxis'] = [axis('上映年份', min='dataMin', max='dataMax', minInterval=1,
-        nameLocation='middle', nameGap=28,
-        axisLabel={**TEXT, 'hideOverlap': True, 'formatter': JsCode('function(v){return String(v);}')})]
-    career.options['yAxis'] = [axis('评分记录', min=0, splitNumber=4, boundaryGap=[0, .12],
-        axisLabel={**TEXT, 'formatter': JsCode("function(v){return v>=10000?v/10000+'万':String(v);}")})]
-    career_scores = Scatter()
-    career_scores.add_xaxis([])
-    for index, color in enumerate(COLORS[:3]):
-        career_scores.add_yaxis('', [], symbol=['circle', 'diamond', 'triangle'][index], symbol_size=9,
-            itemstyle_opts=opts.ItemStyleOpts(color=color, opacity=.9, border_color='#171214', border_width=1),
-            label_opts=opts.LabelOpts(is_show=False))
-    career_scores.options['xAxis'] = career.options['xAxis']
-    career_scores.options['yAxis'] = [axis('作品均分', min=.5, max=5, interval=.5,
-        axisLabel={**text, 'formatter': JsCode("function(v){return Number.isInteger(v)?String(v):'';}")})]
+    gaps = Custom()
+    gaps.add('发行间隔', render_item=JsCode(
+        "function(p,api){var a=api.coord([api.value(0),api.value(2)]),b=api.coord([api.value(1),api.value(2)]),"
+        "c=" + repr(COLORS[:3]) + "[api.value(3)];"
+        "if(api.value(4)===0)return {type:'polygon',shape:{points:[[a[0],a[1]-6],[a[0]+6,a[1]],[a[0],a[1]+6],[a[0]-6,a[1]]]},"
+        "style:{fill:c},emphasis:{style:{fill:'#f6ecdd'}}};"
+        "return {type:'group',children:[{type:'rect',shape:{x:a[0],y:a[1]-7,width:b[0]-a[0],height:14,r:2},"
+        "style:{fill:c,opacity:.55},emphasis:{style:{fill:c,opacity:1}}},"
+        "{type:'line',shape:{x1:b[0],y1:b[1]-11,x2:b[0],y2:b[1]+11},style:{stroke:c,lineWidth:2}},"
+        "{type:'text',style:{x:(a[0]+b[0])/2,y:a[1]-15,text:api.value(4)+' 年',fontSize:14,"
+        "fontFamily:'Microsoft YaHei',fill:'#eadbc8',align:'center',verticalAlign:'bottom'}}]};}"), data=[])
+    gaps.options['xAxis'] = [axis('上映年份', min='dataMin', max='dataMax', minInterval=1, position='top',
+        axisLabel={**text, 'hideOverlap': True, 'formatter': JsCode('function(v){return String(v);}')})]
+    gaps.options['yAxis'] = [axis(kind='category', data=[], inverse=True, axisLabel=text)]
+    gaps.options['series'][0]['encode'] = {'x': [0, 1], 'y': 2}
 
-    partners = Graph()
-    partners.add('共创', [], [], layout='circular', is_draggable=True,
-        symbol_size=16, label_opts=opts.LabelOpts(is_show=True, font_size=14, color='#e0d2c0'),
-        linestyle_opts=opts.LineStyleOpts(color='#919e8b', width=1.5, opacity=.5))
-    partners.options['series'][0].update({'categories': [
-        {'name': f'导演{index}', 'itemStyle': {'color': color}} for index, color in enumerate(COLORS[:4])],
-        'left': '22%', 'right': '22%', 'top': '28%', 'bottom': '28%',
-        'circular': {'rotateLabel': False},
-        'labelLayout': {'hideOverlap': False},
-        'symbolSize': 16,
-        'label': {'show': True, **text, 'color': '#e0d2c0', 'width': 180, 'lineHeight': 19,
-                  'overflow': 'break', 'position': 'right', 'distance': 9},
-        'edgeLabel': {'show': True, **text, 'fontSize': 13, 'formatter': '{c}', 'rotate': 0,
-                      'backgroundColor': '#171214', 'padding': [2, 4], 'borderRadius': 2},
-        'emphasis': {'focus': 'adjacency', 'label': {'width': 180, 'formatter': '{b}'},
-                    'lineStyle': {'width': 3, 'opacity': 1}}})
+    credits = Graph()
+    credits.add('联合署名', [], [], layout='none', is_roam=True, is_draggable=True,
+        label_opts=opts.LabelOpts(is_show=True, font_size=14, color='#eadbc8'),
+        linestyle_opts=opts.LineStyleOpts(width=1.5, color='#919e8b', opacity=.5))
+    credits.options['series'][0].update({'nodeScaleRatio': 0, 'center': None, 'zoom': 1,
+        'left': 60, 'right': 130, 'top': 40, 'bottom': 40,
+        'labelLayout': {'hideOverlap': True}, 'emphasis': {'focus': 'adjacency',
+        'lineStyle': {'opacity': 1, 'width': 3}, 'itemStyle': {'shadowBlur': 12, 'shadowColor': '#d7ab8266'}}})
+    credits.options['prepareData'] = JsCode(
+        "function(groups,films,others,links,width){var colors=" + repr(COLORS[:4]) + ",nodes=[],"
+        "pitch=88*800/Math.max(160,width-190),rows=Math.max(groups.length,films.length,others.length);"
+        "[groups,films,others].forEach(function(items,column){items.forEach(function(item,index){"
+        "var role=item.roleIndex===undefined?3:item.roleIndex,film=column===1;"
+        "nodes.push(Object.assign({},item,{x:column*400,y:(index-(items.length-1)/2)*pitch,"
+        "symbol:film?(item.image?'image://'+item.image:'rect'):column===0?'roundRect':'circle',"
+        "symbolSize:film?[36,52]:column===0?[94,34]:16,"
+        "itemStyle:{color:film?'#d7ab82':colors[role],borderColor:'#f6ecdd',borderWidth:column===0?1:0},"
+        "label:{position:film?'bottom':column===0?'inside':'right',width:film?100:120,overflow:'break',"
+        "lineHeight:18,fontSize:14,color:column===0?'#fff5e7':'#dfd0bd'}}));});});"
+        "return {nodes:nodes,height:Math.max(420,Math.min(2200,rows*88+80)),"
+        "links:links.map(function(link){return Object.assign({},link,{lineStyle:{color:colors[link.roleIndex||0],opacity:.5}});})};}")
 
-    matrix = Custom()
-    matrix.add('合作部数', render_item=JsCode(
-        "function(p,api){var point=api.coord([api.value(0),api.value(1)]),"
-        "w=Math.min(62,api.size([1,0])[0]*.7),h=Math.min(34,Math.abs(api.size([0,1])[1])*.75);"
-        "return {type:'group',children:[{type:'rect',shape:{x:point[0]-w/2,y:point[1]-h/2,width:w,height:h,r:3},"
-        "style:{fill:api.visual('color'),stroke:'#574249',lineWidth:1}},"
-        "{type:'text',style:{x:point[0],y:point[1],text:api.value(2)?String(api.value(2)):'—',"
-        "fontSize:17,fontFamily:'Georgia',fill:'#f6ecdd',align:'center',verticalAlign:'middle'}}]};}"), data=[])
-    matrix.options['series'][0]['encode'] = {'x': 0, 'y': 1, 'tooltip': 2}
-    matrix.options['xAxis'] = [axis(kind='category', data=[])]
-    matrix.options['yAxis'] = [axis(kind='category', data=[], inverse=True,
-        axisLabel={**text, 'width': 180, 'overflow': 'break', 'lineHeight': 18})]
-    matrix.options['visualMap'] = {'show': True, 'min': 0, 'max': 10, 'dimension': 2,
-        'orient': 'horizontal', 'left': 'center', 'bottom': 4, 'itemWidth': 8, 'itemHeight': 90,
-        'textStyle': text, 'textGap': 8, 'padding': 0,
-        'inRange': {'color': ['#231c1e', COLORS[0]]}}
+    chord = Custom()
+    chord.add('合作关系', render_item=JsCode(
+        "function(p,api){var cx=api.getWidth()/2,cy=api.getHeight()/2,r=Math.min(api.getWidth(),api.getHeight())*.28,"
+        "a=api.value(0),b=api.value(1),c=api.value(2),d=api.value(3),color=" + repr(COLORS[:4]) + "[api.value(4)];"
+        "function xy(t){return r*Math.cos(t)+','+r*Math.sin(t);}"
+        "return {type:'path',x:cx,y:cy,shape:{pathData:'M'+xy(a)+' A'+r+','+r+' 0 0 1 '+xy(b)+"
+        "' Q0,0 '+xy(c)+' A'+r+','+r+' 0 0 1 '+xy(d)+' Q0,0 '+xy(a)+' Z'},style:{fill:color,opacity:.6},"
+        "emphasis:{style:{opacity:1,stroke:'#f6ecdd',lineWidth:1}}};}"), data=[])
+    ring = Pie()
+    ring.add('导演', [('', 0)], radius=['57%', '63%'], center=['50%', '50%'],
+        label_opts=opts.LabelOpts(is_show=True, font_size=14, color='#e0d2c0'))
+    ring.options['series'][0]['data'] = []
+    ring.options['series'][0].update({'startAngle': 90, 'clockwise': True, 'avoidLabelOverlap': True,
+        'minShowLabelAngle': 0, 'label': {**text, 'show': True, 'color': '#eadbc8', 'width': 108, 'overflow': 'break', 'lineHeight': 18},
+        'labelLine': {'length': 10, 'length2': 10}, 'labelLayout': {'hideOverlap': True},
+        'itemStyle': {'borderColor': '#171214', 'borderWidth': 3}, 'emphasis': {'scale': False}})
+    chord.options['series'].extend(ring.options['series'])
+    chord.options['series'][0]['coordinateSystem'] = None
+    chord.options['xAxis'] = [axis(show=False)]
+    chord.options['yAxis'] = [axis(show=False)]
+    chord.options['prepareData'] = JsCode(
+        "function(people,links){var colors=" + repr(COLORS[:4]) + ",strength=new Map(),offset=new Map();"
+        "people.forEach(function(p){strength.set(p.id,0);});links.forEach(function(e){strength.set(e.source,strength.get(e.source)+e.count);"
+        "strength.set(e.target,strength.get(e.target)+e.count);});"
+        "var total=Array.from(strength.values()).reduce(function(a,b){return a+b;},0),angle=-Math.PI/2,scale=2*Math.PI/total;"
+        "var nodes=people.map(function(person){offset.set(person.id,angle);angle+=strength.get(person.id)*scale;"
+        "return Object.assign({},person,{value:strength.get(person.id),itemStyle:{color:colors[person.roleIndex===undefined?3:person.roleIndex]}});});"
+        "var ribbons=links.map(function(e){var a=offset.get(e.source),b=offset.get(e.target),size=e.count*scale;"
+        "offset.set(e.source,a+size);offset.set(e.target,b+size);return Object.assign({},e,"
+        "{value:[a,a+size,b,b+size,e.roleIndex||0]});});return {nodes:nodes,ribbons:ribbons};}")
 
-    radar = Radar()
-    radar.options['radar'] = {'indicator': [{'name': '', 'max': 100} for _ in range(8)],
-        'center': ['50%', '50%'], 'radius': '54%', 'splitNumber': 3,
-        'axisName': {**text, 'fontSize': 15, 'color': '#e0d2c0', 'lineHeight': 22},
-        'axisNameGap': 12,
-        'axisLine': {'lineStyle': {'color': '#70575e', 'opacity': .45}},
-        'splitLine': {'lineStyle': {'color': '#70575e', 'opacity': .45}},
-        'splitArea': {'show': False}}
-    radar.options['series'] = [{'type': 'radar', 'data': [], 'symbolSize': 5,
-        'lineStyle': {'color': color, 'width': 2.5, 'type': ['solid', 'dashed', 'dotted'][index]},
-        'itemStyle': {'color': color}, 'symbol': ['circle', 'diamond', 'triangle'][index],
-        'areaStyle': {'color': color, 'opacity': .08}} for index, color in enumerate(COLORS[:3])]
+    blocks = TreeMap()
+    blocks.add('类型构成', [])
+    blocks.options['series'][0].update({'left': 6, 'right': 6, 'top': 8, 'bottom': 8,
+        'roam': False, 'nodeClick': False, 'breadcrumb': {'show': False}, 'sort': False,
+        'label': {**text, 'show': True, 'color': '#f7eee1',
+                  'formatter': JsCode('function(p){return p.data.genre||p.name;}'), 'overflow': 'truncate'},
+        'upperLabel': {**text, 'show': True, 'height': 28, 'color': '#f7eee1'},
+        'itemStyle': {'borderColor': '#171214', 'borderWidth': 3, 'gapWidth': 3},
+        'levels': [{'itemStyle': {'borderWidth': 0, 'gapWidth': 8}},
+                   {'upperLabel': {'show': True}, 'itemStyle': {'borderWidth': 2, 'gapWidth': 3}},
+                   {'upperLabel': {'show': False}, 'itemStyle': {'borderWidth': 1, 'gapWidth': 1}}]})
+    blocks.options['genreOrder'] = genres
+    blocks.options['roleStyles'] = [{'borderColor': color, 'color': '#21191c'} for color in COLORS[:3]]
+    blocks.options['genreStyles'] = {name: {'color': palette[index % len(palette)],
+        **({'decal': {'symbol': 'rect', 'dashArrayX': [1, 0], 'dashArrayY': [2, 5], 'rotation': .785,
+                     'color': '#ffffff20'}} if index >= len(palette) else {})}
+        for index, name in enumerate(genres)}
 
-    genres = Custom()
-    for color in COLORS[:3]:
-        genres.add('', render_item=JsCode(
-            "function(p,api){var point=api.coord([api.value(1),api.value(0)]),base=api.coord([0,api.value(0)]),"
-            "dy=(p.seriesIndex-(api.value(2)-1)/2)*13;return {type:'group',children:["
-            "{type:'line',shape:{x1:base[0],y1:base[1]+dy,x2:point[0],y2:point[1]+dy},"
-            "style:{stroke:'" + color + "',lineWidth:1,opacity:.4}},"
-            "{type:'circle',shape:{cx:point[0],cy:point[1]+dy,r:4},style:{fill:'" + color + "'}},"
-            "{type:'text',style:{x:point[0]+9,y:point[1]+dy,text:Number(api.value(1)).toFixed(1)+'%',"
-            "fontSize:13,fontFamily:'Georgia',fill:'" + color + "',verticalAlign:'middle'}}]};}"), data=[])
-    genres.options['xAxis'] = [axis('标签占比', min=0, max=100, interval=50, nameLocation='middle', nameGap=28,
-        axisLabel={**TEXT, 'formatter': '{value}%'})]
-    genres.options['yAxis'] = [axis(kind='category', data=[], inverse=True)]
+    history = Line()
+    history.add_xaxis([])
+    for role in range(3):
+        for index, name in enumerate(genres):
+            history.add_yaxis(name, [], color=palette[index % len(palette)], is_step='middle',
+                is_symbol_show=False, stack=f'导演{role}', label_opts=opts.LabelOpts(is_show=False),
+                linestyle_opts=opts.LineStyleOpts(width=1, type_='solid' if index < len(palette) else 'dashed'),
+                areastyle_opts=opts.AreaStyleOpts(opacity=.8))
+            history.options['series'][-1].update({'xAxisIndex': role, 'yAxisIndex': role,
+                'emphasis': {'focus': 'series'}})
+    history.options['genreOrder'] = genres
+    history.options['facetHeight'] = 276
+    history.options['xAxis'] = [axis(kind='category', data=[], gridIndex=role, boundaryGap=False,
+        axisLabel={**text, 'hideOverlap': True}, show=role == 0) for role in range(3)]
+    history.options['yAxis'] = [axis(min=0, max=100, interval=50, gridIndex=role, name='',
+        nameTextStyle={**text, 'color': COLORS[role]}, axisLabel={**text, 'formatter': '{value}%'}, show=role == 0)
+        for role in range(3)]
+    history.options['grid'] = [{'left': 46, 'right': 18, 'top': 34 + role * 276, 'height': 204} for role in range(3)]
+    history.options['legend'] = {'show': True, 'type': 'scroll', 'bottom': 4, 'left': 30, 'right': 20,
+        'selectedMode': False, 'textStyle': text, 'pageTextStyle': text, 'pageIconColor': '#d7ab82',
+        'pageIconInactiveColor': '#5a4349', 'itemWidth': 12, 'itemHeight': 9}
+    history.options.update({'backgroundColor': 'transparent', 'animationDuration': 350,
+        'tooltip': {'show': True, 'trigger': 'item', 'confine': True, 'backgroundColor': '#171214',
+        'borderColor': '#846662', 'textStyle': {**text, 'color': '#f6ecdd'},
+        'formatter': JsCode("function(p){var d=p.data;return echarts.format.encodeHTML(d.director)+'<br/>'+d.period+' · '+"
+            "echarts.format.encodeHTML(d.genre)+'<br/>'+d.value[1].toFixed(1)+'% · '+d.movieIds.length+' 部影片';}")}})
 
-    # Typography and ruler styles are shared; data geometry stays beside each chart.
-    for chart in [dots, profiles, career, career_scores, matrix, radar, partners, genres]:
+    for chart in [box, threshold, posters, gaps, credits, chord, blocks]:
         chart.options['textStyle'] = text
-        for key in ['xAxis', 'yAxis']:
-            for item in chart.options.get(key, []):
-                item['nameTextStyle'] = text
-                item['axisLabel'] = {**item['axisLabel'], **text, 'hideOverlap': True}
-                item['splitLine'] = {'show': key == 'yAxis' and item['type'] != 'category',
-                                     'lineStyle': {'color': '#c6b8a6', 'opacity': .09}}
+        for setting in chart.options.get('xAxis', []) + chart.options.get('yAxis', []):
+            setting['nameTextStyle'] = text
+            setting['axisLabel'] = {**setting.get('axisLabel', {}), **text}
 
-    profile_counts = finish(profiles, (42, 22, 24, 46), tooltip={'formatter': JsCode(
-        "function(p){return echarts.format.encodeHTML(p.seriesName)+'<br/>'+p.data.bin+' 分 · '+p.data.count+' 部 · '+p.data.share.toFixed(1)+'%';}")})
-    profiles.options['yAxis'] = [axis('作品占比', min=0, max=100, interval=25, nameTextStyle=text,
-        axisLabel={**text, 'formatter': '{value}%'}, splitLine={'lineStyle': {'color': '#c6b8a6', 'opacity': .09}})]
-    partner_tooltip = {'formatter': JsCode(
-        "function(p){return p.dataType==='edge'?'共同执导 '+p.value+' 部':echarts.format.encodeHTML(p.name);}")}
-    plain_network = finish(partners, (20, 20, 20, 20),
-        {'series': [{'label': {'width': 124}}]}, tooltip=partner_tooltip)
-    partners.options['series'][0]['circular']['rotateLabel'] = True
-
+    film_tooltip = JsCode("function(p){var d=p.data;return echarts.format.encodeHTML(d.name)+'<br/>'+(d.year||'年份未知')+' · '+"
+        "(d.mean===null?'暂无评分':d.mean.toFixed(2)+' / 5')+'<br/>'+d.count.toLocaleString()+' 条评分';}")
     return {
-        'ratingsDots': finish(dots, (52, 24, 44, 44), tooltip={'formatter': JsCode(
-            "function(p){var d=p.data;return d.statistic?'影片均分中位 '+p.value[0].toFixed(2)+'<br/>中间 50% '+p.value[1].toFixed(2)+'–'+p.value[2].toFixed(2):"
-            "echarts.format.encodeHTML(d.name)+'<br/>'+d.year+' · '+d.mean+' 分 · '+d.count.toLocaleString()+' 条评分';}")}),
-        'ratingsCurve': profile_counts,
-        'ratingsShare': finish(profiles, (42, 22, 24, 46), tooltip={'formatter': JsCode(
-            "function(p){return echarts.format.encodeHTML(p.seriesName)+'<br/>'+p.data.bin+' 分 · '+p.data.count+' 部 · '+p.data.share.toFixed(1)+'%';}")}),
-        'careerVotes': finish(career, (48, 28, 42, 44), tooltip={'formatter': JsCode(
-            "function(p){var d=p.data;return echarts.format.encodeHTML(d.name)+'<br/>'+d.year+' · '"
-            "+d.count.toLocaleString()+' 条评分 · '+(d.mean===null?'—':d.mean)+' 分';}")}),
-        'careerScores': finish(career_scores, (42, 24, 28, 44), tooltip={'formatter': JsCode(
-            "function(p){var d=p.data;return echarts.format.encodeHTML(d.name)+'<br/>'+d.year+' · '+d.mean+' 分 · '+d.count.toLocaleString()+' 条评分';}")}),
-        'partnersNetwork': plain_network,
-        'partnersOrbit': finish(partners, (20, 20, 20, 20),
-            {'series': [{'left': '32%', 'right': '32%', 'top': '32%', 'bottom': '32%',
-                        'label': {'width': 110, 'formatter': JsCode(
-                "function(p){return p.data.category<3||p.data.showLabel?p.name:'';}")}}]}, tooltip=partner_tooltip),
-        'partnersMatrix': finish(matrix, (194, 18, 16, 64),
-            {'grid': {'left': 118, 'right': 12}, 'yAxis': [{'axisLabel': {'width': 100}}]}, tooltip={'formatter': JsCode(
-            "function(p){var d=p.data;return echarts.format.encodeHTML(d.director)+' × '+echarts.format.encodeHTML(d.partner)+'<br/>共同执导 '+p.value[2]+' 部';}")}),
-        'genresRadar': finish(radar, (0, 0, 0, 0), tooltip={'formatter': JsCode(
-            "function(p){return echarts.format.encodeHTML(p.name)+'<br/>'+p.data.genres.map(function(n,i){return n+' '+p.value[i].toFixed(1)+'%';}).join('<br/>');}")}),
-        'genresRank': finish(genres, (44, 62, 16, 44), tooltip={'formatter': JsCode(
-            "function(p){return echarts.format.encodeHTML(p.seriesName)+'<br/>'+p.data.name+' '+p.value[1].toFixed(1)+'%';}")}),
-        'filmRatings': build_score_distribution(True)}
+        'ratingsBox': finish(box, (74, 24, 28, 62), tooltip={'formatter': JsCode(
+            "function(p){var d=p.data;if(d.statistic)return echarts.format.encodeHTML(d.name)+'<br/>中位数 '+d.value[2].toFixed(2)+"
+            "' · 中间 50% '+d.value[1].toFixed(2)+'–'+d.value[3].toFixed(2)+'<br/>'+d.sample+' 部作品';"
+            "return echarts.format.encodeHTML(d.name)+'<br/>'+d.mean.toFixed(2)+' / 5 · '+d.year;}")}),
+        'ratingsThreshold': finish(threshold, (50, 24, 34, 62), tooltip={'formatter': JsCode(
+            "function(p){var d=p.data;return echarts.format.encodeHTML(p.seriesName)+'<br/>≥ '+d.value[0].toFixed(3)+"
+            "' 分 · '+d.count+' / '+d.total+' 部<br/>'+d.value[1].toFixed(1)+'%';}")}),
+        'careerPosters': finish(posters, (76, 28, 48, 44), tooltip={'formatter': film_tooltip}),
+        'careerGaps': finish(gaps, (130, 28, 42, 40), tooltip={'formatter': JsCode(
+            "function(p){var d=p.data;return echarts.format.encodeHTML(d.director)+'<br/>'+"
+            "echarts.format.encodeHTML(d.before)+' ('+d.value[0]+')<br/>→ '+echarts.format.encodeHTML(d.after)+"
+            "' ('+d.value[1]+')<br/>上映年相差 '+d.value[4]+' 年';}")}),
+        'creditsNetwork': finish(credits, (16, 16, 20, 20), tooltip={'formatter': JsCode(
+            "function(p){var d=p.data;return echarts.format.encodeHTML(d.name)+(d.movieIds?'<br/>'+d.movieIds.length+' 部联合执导影片':'');}")}),
+        'creditsChord': finish(chord, (0, 0, 0, 0), tooltip={'formatter': JsCode(
+            "function(p){var d=p.data;return echarts.format.encodeHTML(d.name)+'<br/>'+d.movieIds.length+' 部联合执导影片';}")}),
+        'genresBlocks': finish(blocks, (0, 0, 0, 0), tooltip={'formatter': JsCode(
+            "function(p){var d=p.data;return echarts.format.encodeHTML(d.director||d.name)+(d.genre?"
+            "'<br/>'+echarts.format.encodeHTML(d.genre)+' · '+d.value.toFixed(1)+'%<br/>'+d.movieIds.length+' 部影片':'');}")}),
+        'genresHistory': history.dump_options(),
+        'filmRatings': build_score_distribution(True),
+    }
 
 
 def main():
