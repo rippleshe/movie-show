@@ -1,0 +1,199 @@
+MovieLens 数据集说明（中文译本）
+================================
+
+- 译自官方 `README.txt`：MovieLens Latest Datasets — Full 版（ml-latest），数据生成于 2023-07-20。
+- 英文原版已归档至 `.archive/官方说明英文原版.txt`；如文字有歧义，以英文原版为准。
+- 译本与实测数据冲突时，以实测数据为准；文内标了「本项目实测校正」的地方就是这类冲突。
+- 本译本只翻译说明文字，文件名、字段名、链接与论文引用保持英文原样。
+- 项目内文件名与表头已改为中文：movies.csv→电影.csv，ratings.csv→评分.csv，tags.csv→标签.csv，links.csv→链接.csv，genome-scores.csv→标签关联度.csv，genome-tags.csv→标签词典.csv。正文仍用官方英文文件名说明格式。
+
+摘要
+====
+
+本数据集（ml-latest）记录了电影推荐服务 [MovieLens](http://movielens.org) 上的五星评分与自由文本标签行为。数据集包含 33832162 条评分和 2328315 次标签标注，覆盖 86537 部电影。数据由 330975 位用户在 1995 年 1 月 9 日至 2023 年 7 月 20 日之间产生，数据集生成日期为 2023 年 7 月 20 日。
+
+用户为随机抽取。所有被选中的用户至少评过 1 部电影。数据集不包含任何人口统计信息。每位用户仅以一个编号表示，不提供其他信息。
+
+数据文件包括 `genome-scores.csv`、`genome-tags.csv`、`links.csv`、`movies.csv`、`ratings.csv` 和 `tags.csv`。各文件的详细内容与用法见下文。
+
+这是一个*开发用*数据集，会随时间变化，不适合作为可共享的研究结论依据。如果你的目的是发表研究结果，请使用*基准*版本数据集。
+
+本数据集及其他 GroupLens 数据集均可在 <http://grouplens.org/datasets/> 公开下载。
+
+
+使用许可
+========
+
+明尼苏达大学及所有相关研究人员均不对数据的正确性、对特定用途的适用性、或基于本数据集所得结果的可靠性作出保证。本数据集可用于任何研究目的，但须满足以下条件：
+
+* 用户不得声称或暗示获得明尼苏达大学或 GroupLens 研究组的认可或背书。
+* 在使用本数据集产生的出版物中，用户必须注明数据集的使用情况（引用信息见下文）。
+* 用户可以再分发本数据集（包括修改后的版本），但须以相同的许可条件分发。
+* 未经明尼苏达大学 GroupLens 研究项目教职人员许可，用户不得将本信息用于任何商业或营利目的。
+* 可执行软件脚本按“原样”提供，不附带任何明示或暗示的担保，包括但不限于对适销性和特定用途适用性的暗示担保。软件质量与性能的全部风险由用户承担。若程序被证明有缺陷，用户需自行承担所有必要的维护、修复或更正费用。
+
+明尼苏达大学及其关联机构或雇员，在任何情况下均不对因使用或无法使用本程序而产生的任何损害承担责任（包括但不限于数据丢失或数据失真）。
+
+如有任何问题或意见，请发送邮件至 <grouplens-info@umn.edu>。
+
+
+引用
+====
+
+如需在出版物中说明使用了本数据集，请引用以下论文：
+
+> F. Maxwell Harper and Joseph A. Konstan. 2015. The MovieLens Datasets: History and Context. ACM Transactions on Interactive Intelligent Systems (TiiS) 5, 4: 19:1–19:19. <https://doi.org/10.1145/2827872>
+
+
+GroupLens 补充信息
+==================
+
+GroupLens 是明尼苏达大学计算机科学与工程系的研究组。自 1992 年成立以来，其研究项目涉及多个领域，包括：
+
+* 推荐系统
+* 在线社区
+* 移动与普适计算技术
+* 数字图书馆
+* 本地地理信息系统
+
+GroupLens Research 运营着基于协同过滤的电影推荐服务 MovieLens，即本数据集的来源。欢迎访问 <http://movielens.org> 试用。如果你有关于在 MovieLens 上开展实验工作的想法，请发送邮件至 <grouplens-info@cs.umn.edu>，我们始终乐于与外部合作者合作。
+
+
+文件内容与用法
+==============
+
+格式与编码
+----------
+
+数据集文件为[逗号分隔值](http://en.wikipedia.org/wiki/Comma-separated_values)（CSV）格式，仅含一行表头。含逗号（`,`）的列使用双引号（`"`）转义。文件编码为 UTF-8。如果电影片名或标签值中的重音字符（例如 Misérables, Les (1995)）显示异常，请确认读取数据的程序（文本编辑器、终端或脚本）已配置为 UTF-8。
+
+本项目转换后统一为 UTF-8 with BOM（Excel 双击不乱码）。读写一律用 `encoding="utf-8-sig"`。pandas 3.0.5 已能自动识别 BOM，但 Python 内置 csv 模块用 `utf-8` 读时首列列名仍是 `\ufeff电影编号`，两套解析器别混用。
+
+
+用户编号
+--------
+
+MovieLens 用户为随机抽取，其编号已匿名化。`ratings.csv` 与 `tags.csv` 中的用户编号是一致的（即同一编号在两个文件中指同一位用户）。
+
+
+电影编号
+--------
+
+数据集只收录至少有一条评分或一个标签的电影。电影编号与 MovieLens 网站使用的编号一致（例如编号 `1` 对应链接 <https://movielens.org/movies/1>）。`ratings.csv`、`tags.csv`、`movies.csv`、`links.csv` 四个文件中的电影编号一致（即同一编号在四个文件中指同一部电影）。
+
+
+评分文件结构（ratings.csv）
+---------------------------
+
+所有评分都在 `ratings.csv` 中。表头之后的每一行代表一位用户对一部电影的一次评分，格式如下：
+
+    userId,movieId,rating,timestamp
+
+文件内各行先按 userId 排序，同一用户内再按 movieId 排序。
+
+评分为五星制，以半星递增（0.5 星至 5.0 星）。
+
+时间戳表示自 1970 年 1 月 1 日协调世界时（UTC）零点起经过的秒数。
+
+
+标签文件结构（tags.csv）
+------------------------
+
+所有标签都在 `tags.csv` 中。表头之后的每一行代表一位用户给一部电影打的一个标签，格式如下：
+
+    userId,movieId,tag,timestamp
+
+文件内各行先按 userId 排序，同一用户内再按 movieId 排序。
+
+标签是用户生成的电影元数据，每个标签通常是一个单词或短语。某个标签的含义、价值和用途由每位用户自行决定。
+
+时间戳表示自 1970 年 1 月 1 日协调世界时（UTC）零点起经过的秒数。
+
+
+电影文件结构（movies.csv）
+--------------------------
+
+电影信息在 `movies.csv` 中。表头之后的每一行代表一部电影，格式如下：
+
+    movieId,title,genres
+
+电影片名为人工录入或从 <https://www.themoviedb.org/> 导入，括号内为上映年份。片名中可能存在错误和不一致。
+
+类型（genres）为竖线分隔的列表。以下为**实际数据中的全部 20 个取值**，括号内是统一种法的中文图例名与实测部数（2026-10-22 核对 86,537 行）：
+
+* Action（动作，9,563）
+* Adventure（冒险，5,349）
+* Animation（动画，4,579）
+* Children（儿童，4,367）
+* Comedy（喜剧，22,830）
+* Crime（犯罪，6,917）
+* Documentary（纪录片，9,283）
+* Drama（剧情，33,681）
+* Fantasy（奇幻，3,821）
+* Film-Noir（黑色电影，354）
+* Horror（恐怖，8,570）
+* IMAX（IMAX，195）
+* Musical（音乐，1,059）
+* Mystery（悬疑，3,972）
+* Romance（爱情，10,172）
+* Sci-Fi（科幻，4,850）
+* Thriller（惊悚，11,675）
+* War（战争，2,301）
+* Western（西部，1,690）
+* (no genres listed)（未标注类型，7,060）
+
+与官方 README 的差异（以数据为准，README 不作数）：
+
+- 官方清单漏了 IMAX；数据里有 195 部。
+- 官方写作 Children's，数据里实际是 Children。
+- 7,060 部（8.2%）为 (no genres listed)：做类型统计时必须单独剔除，并在图注写明剔除了多少部，不能把它当成一个类型参与排行。
+- 有类型的电影 79,477 部，类型计数总和 152,288（多值重复计数，平均每部 1.92 个类型）。
+- 中文名是统一图例用词，四个板块都直接用这一套，不要各写一套。
+
+
+链接文件结构（links.csv）
+-------------------------
+
+`links.csv` 提供可用于关联其他电影数据源的编号。表头之后的每一行代表一部电影，格式如下：
+
+    movieId,imdbId,tmdbId
+
+movieId 是 <https://movielens.org> 使用的电影编号。例如电影《玩具总动员》的链接为 <https://movielens.org/movies/1>。
+
+imdbId 是 <http://www.imdb.com> 使用的电影编号。例如电影《玩具总动员》的链接为 <http://www.imdb.com/title/tt0114709/>。
+
+tmdbId 是 <https://www.themoviedb.org> 使用的电影编号。例如电影《玩具总动员》的链接为 <https://www.themoviedb.org/movie/862>。
+
+使用上述资源须遵守各提供方各自的服务条款。
+
+
+标签基因组（genome-scores.csv 与 genome-tags.csv）
+--------------------------------------------------
+
+本数据集包含当前版本的标签基因组（Tag Genome）。
+
+[genome-paper]: http://files.grouplens.org/papers/tag_genome.pdf
+
+标签基因组是一种包含电影标签关联度的数据结构。该结构为稠密矩阵：基因组中的每部电影对基因组中的*每一个*标签都有一个取值。
+
+如[这篇文章][genome-paper]所述，标签基因组编码电影体现特定属性（如氛围感、引人深思、写实等）的强弱程度。标签基因组基于用户贡献内容（标签、评分与文字评论），通过机器学习算法计算得出。
+
+基因组数据拆分为两个文件。`genome-scores.csv` 包含电影与标签的关联度数据，格式如下：
+
+    movieId,tagId,relevance
+
+第二个文件 `genome-tags.csv` 提供基因组文件中标签编号对应的标签描述，格式如下：
+
+    tagId,tag
+
+`tagId` 在数据导出时生成，因此不同版本的 MovieLens 数据集之间可能不同。
+
+引用标签基因组数据时，请一并附上以下引用：
+
+> Jesse Vig, Shilad Sen, and John Riedl. 2012. The Tag Genome: Encoding Community Knowledge to Support Novel Interaction. ACM Trans. Interact. Intell. Syst. 2, 3: 13:1–13:44. <https://doi.org/10.1145/2362394.2362395>
+
+
+交叉验证
+--------
+
+旧版 MovieLens 数据集会附带预先划分的交叉折（cross-fold），或提供计算脚本。由于现代工具包大多已内置该功能，我们不再在数据集中捆绑这两者。如果你想了解推荐系统评估中交叉折计算的标准做法，可参考 [LensKit](http://lenskit.org)，其中提供工具、文档与开源代码示例。

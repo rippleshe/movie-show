@@ -1,0 +1,13 @@
+/.archive/
+**/__pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
+Thumbs.db
+.DS_Store
+
+# 大体积公开原始数据保留在本地，下载与清洗说明见数据来源说明和数据清洗记录。
+/原始数据/评分.csv
+/原始数据/标签关联度.csv
+/原始数据/标签.csv

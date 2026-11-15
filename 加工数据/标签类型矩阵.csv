@@ -1,0 +1,379 @@
+﻿标签,类型,共同影片数
+action,IMAX,77
+action,儿童,48
+action,冒险,405
+action,剧情,346
+action,动作,1026
+action,动画,84
+action,喜剧,214
+action,奇幻,170
+action,恐怖,104
+action,悬疑,71
+action,惊悚,526
+action,战争,75
+action,爱情,96
+action,犯罪,271
+action,科幻,322
+action,纪录片,2
+action,西部,23
+action,音乐,7
+action,黑色电影,3
+atmospheric,IMAX,20
+atmospheric,儿童,19
+atmospheric,冒险,91
+atmospheric,剧情,522
+atmospheric,动作,138
+atmospheric,动画,46
+atmospheric,喜剧,91
+atmospheric,奇幻,107
+atmospheric,恐怖,211
+atmospheric,悬疑,144
+atmospheric,惊悚,284
+atmospheric,战争,37
+atmospheric,爱情,115
+atmospheric,犯罪,135
+atmospheric,科幻,129
+atmospheric,纪录片,3
+atmospheric,西部,29
+atmospheric,音乐,8
+atmospheric,黑色电影,32
+based on a book,IMAX,38
+based on a book,儿童,158
+based on a book,冒险,291
+based on a book,剧情,1131
+based on a book,动作,182
+based on a book,动画,93
+based on a book,喜剧,288
+based on a book,奇幻,185
+based on a book,恐怖,143
+based on a book,悬疑,159
+based on a book,惊悚,349
+based on a book,战争,104
+based on a book,爱情,320
+based on a book,犯罪,204
+based on a book,科幻,174
+based on a book,纪录片,8
+based on a book,西部,26
+based on a book,音乐,48
+based on a book,黑色电影,24
+cinematography,IMAX,29
+cinematography,儿童,12
+cinematography,冒险,88
+cinematography,剧情,542
+cinematography,动作,131
+cinematography,动画,11
+cinematography,喜剧,86
+cinematography,奇幻,72
+cinematography,恐怖,104
+cinematography,悬疑,82
+cinematography,惊悚,193
+cinematography,战争,52
+cinematography,爱情,118
+cinematography,犯罪,103
+cinematography,科幻,93
+cinematography,纪录片,30
+cinematography,西部,25
+cinematography,音乐,16
+cinematography,黑色电影,16
+classic,IMAX,8
+classic,儿童,94
+classic,冒险,138
+classic,剧情,297
+classic,动作,117
+classic,动画,70
+classic,喜剧,254
+classic,奇幻,81
+classic,恐怖,56
+classic,悬疑,50
+classic,惊悚,95
+classic,战争,41
+classic,爱情,142
+classic,犯罪,82
+classic,科幻,66
+classic,纪录片,4
+classic,西部,23
+classic,音乐,71
+classic,黑色电影,13
+comedy,IMAX,22
+comedy,儿童,195
+comedy,冒险,278
+comedy,剧情,487
+comedy,动作,337
+comedy,动画,160
+comedy,喜剧,1973
+comedy,奇幻,178
+comedy,恐怖,112
+comedy,悬疑,63
+comedy,惊悚,148
+comedy,战争,32
+comedy,爱情,456
+comedy,犯罪,229
+comedy,科幻,157
+comedy,纪录片,30
+comedy,西部,22
+comedy,音乐,52
+comedy,黑色电影,3
+dark comedy,IMAX,3
+dark comedy,儿童,10
+dark comedy,冒险,37
+dark comedy,剧情,342
+dark comedy,动作,86
+dark comedy,动画,26
+dark comedy,喜剧,535
+dark comedy,奇幻,54
+dark comedy,恐怖,147
+dark comedy,悬疑,56
+dark comedy,惊悚,165
+dark comedy,战争,15
+dark comedy,爱情,54
+dark comedy,犯罪,146
+dark comedy,科幻,54
+dark comedy,纪录片,5
+dark comedy,西部,3
+dark comedy,音乐,15
+dark comedy,黑色电影,5
+dystopia,IMAX,27
+dystopia,儿童,7
+dystopia,冒险,91
+dystopia,剧情,141
+dystopia,动作,213
+dystopia,动画,43
+dystopia,喜剧,35
+dystopia,奇幻,34
+dystopia,恐怖,65
+dystopia,悬疑,32
+dystopia,惊悚,166
+dystopia,战争,5
+dystopia,爱情,26
+dystopia,犯罪,29
+dystopia,科幻,366
+dystopia,纪录片,2
+dystopia,西部,4
+dystopia,音乐,3
+dystopia,黑色电影,4
+fantasy,IMAX,45
+fantasy,儿童,151
+fantasy,冒险,318
+fantasy,剧情,233
+fantasy,动作,219
+fantasy,动画,139
+fantasy,喜剧,216
+fantasy,奇幻,467
+fantasy,恐怖,71
+fantasy,悬疑,42
+fantasy,惊悚,91
+fantasy,战争,10
+fantasy,爱情,114
+fantasy,犯罪,22
+fantasy,科幻,135
+fantasy,纪录片,4
+fantasy,西部,3
+fantasy,音乐,34
+fantasy,黑色电影,1
+funny,IMAX,38
+funny,儿童,209
+funny,冒险,283
+funny,剧情,391
+funny,动作,312
+funny,动画,183
+funny,喜剧,1256
+funny,奇幻,171
+funny,恐怖,100
+funny,悬疑,52
+funny,惊悚,151
+funny,战争,22
+funny,爱情,285
+funny,犯罪,172
+funny,科幻,153
+funny,纪录片,30
+funny,西部,19
+funny,音乐,54
+funny,黑色电影,6
+romance,IMAX,29
+romance,儿童,75
+romance,冒险,157
+romance,剧情,1058
+romance,动作,173
+romance,动画,84
+romance,喜剧,763
+romance,奇幻,178
+romance,恐怖,56
+romance,悬疑,82
+romance,惊悚,178
+romance,战争,64
+romance,爱情,1087
+romance,犯罪,86
+romance,科幻,135
+romance,纪录片,3
+romance,西部,25
+romance,音乐,64
+romance,黑色电影,6
+sci-fi,IMAX,47
+sci-fi,儿童,46
+sci-fi,冒险,234
+sci-fi,剧情,213
+sci-fi,动作,361
+sci-fi,动画,83
+sci-fi,喜剧,132
+sci-fi,奇幻,87
+sci-fi,恐怖,132
+sci-fi,悬疑,70
+sci-fi,惊悚,272
+sci-fi,战争,10
+sci-fi,爱情,59
+sci-fi,犯罪,20
+sci-fi,科幻,737
+sci-fi,纪录片,5
+sci-fi,西部,6
+sci-fi,音乐,3
+sci-fi,黑色电影,2
+social commentary,IMAX,13
+social commentary,儿童,15
+social commentary,冒险,70
+social commentary,剧情,424
+social commentary,动作,118
+social commentary,动画,34
+social commentary,喜剧,198
+social commentary,奇幻,35
+social commentary,恐怖,68
+social commentary,悬疑,48
+social commentary,惊悚,160
+social commentary,战争,19
+social commentary,爱情,64
+social commentary,犯罪,98
+social commentary,科幻,141
+social commentary,纪录片,84
+social commentary,西部,8
+social commentary,音乐,13
+social commentary,黑色电影,4
+stylized,IMAX,15
+stylized,儿童,13
+stylized,冒险,74
+stylized,剧情,307
+stylized,动作,132
+stylized,动画,33
+stylized,喜剧,117
+stylized,奇幻,78
+stylized,恐怖,74
+stylized,悬疑,70
+stylized,惊悚,162
+stylized,战争,14
+stylized,爱情,79
+stylized,犯罪,106
+stylized,科幻,77
+stylized,纪录片,3
+stylized,西部,11
+stylized,音乐,17
+stylized,黑色电影,16
+surreal,IMAX,11
+surreal,儿童,31
+surreal,冒险,79
+surreal,剧情,409
+surreal,动作,68
+surreal,动画,105
+surreal,喜剧,247
+surreal,奇幻,193
+surreal,恐怖,158
+surreal,悬疑,110
+surreal,惊悚,170
+surreal,战争,13
+surreal,爱情,102
+surreal,犯罪,69
+surreal,科幻,142
+surreal,纪录片,12
+surreal,西部,10
+surreal,音乐,41
+surreal,黑色电影,9
+thought-provoking,IMAX,15
+thought-provoking,儿童,8
+thought-provoking,冒险,44
+thought-provoking,剧情,273
+thought-provoking,动作,63
+thought-provoking,动画,22
+thought-provoking,喜剧,60
+thought-provoking,奇幻,31
+thought-provoking,恐怖,18
+thought-provoking,悬疑,39
+thought-provoking,惊悚,91
+thought-provoking,战争,30
+thought-provoking,爱情,55
+thought-provoking,犯罪,46
+thought-provoking,科幻,87
+thought-provoking,纪录片,37
+thought-provoking,西部,2
+thought-provoking,音乐,3
+thought-provoking,黑色电影,2
+thriller,IMAX,21
+thriller,儿童,4
+thriller,冒险,91
+thriller,剧情,476
+thriller,动作,290
+thriller,动画,5
+thriller,喜剧,64
+thriller,奇幻,28
+thriller,恐怖,242
+thriller,悬疑,251
+thriller,惊悚,841
+thriller,战争,16
+thriller,爱情,58
+thriller,犯罪,281
+thriller,科幻,150
+thriller,纪录片,2
+thriller,西部,7
+thriller,黑色电影,22
+twist ending,IMAX,10
+twist ending,儿童,4
+twist ending,冒险,31
+twist ending,剧情,222
+twist ending,动作,60
+twist ending,动画,6
+twist ending,喜剧,76
+twist ending,奇幻,23
+twist ending,恐怖,116
+twist ending,悬疑,137
+twist ending,惊悚,268
+twist ending,战争,5
+twist ending,爱情,40
+twist ending,犯罪,121
+twist ending,科幻,72
+twist ending,西部,2
+twist ending,音乐,3
+twist ending,黑色电影,9
+violence,IMAX,42
+violence,儿童,36
+violence,冒险,318
+violence,剧情,959
+violence,动作,828
+violence,动画,83
+violence,喜剧,326
+violence,奇幻,141
+violence,恐怖,606
+violence,悬疑,184
+violence,惊悚,881
+violence,战争,119
+violence,爱情,105
+violence,犯罪,534
+violence,科幻,356
+violence,纪录片,38
+violence,西部,75
+violence,音乐,10
+violence,黑色电影,23
+visually appealing,IMAX,32
+visually appealing,儿童,34
+visually appealing,冒险,123
+visually appealing,剧情,268
+visually appealing,动作,135
+visually appealing,动画,64
+visually appealing,喜剧,99
+visually appealing,奇幻,99
+visually appealing,恐怖,46
+visually appealing,悬疑,43
+visually appealing,惊悚,122
+visually appealing,战争,19
+visually appealing,爱情,82
+visually appealing,犯罪,67
+visually appealing,科幻,121
+visually appealing,纪录片,17
+visually appealing,西部,14
+visually appealing,音乐,12
+visually appealing,黑色电影,9

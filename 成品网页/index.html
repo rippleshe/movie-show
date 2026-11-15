@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>银幕指南 · 数据与清洗</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="主题.css">
+<style>
+/* ===== 首页（临时版）=====
+   三个展示板块待交付。 */
+
+:root {
+  --夜底: #141011;
+  --夜舞台: #0b0909;
+  --夜板: #1d1819;
+  --夜线: #3a3233;
+  --夜线淡: #2a2425;
+  --夜墨: #f6ecdd;
+  --夜次: #cbbfa9;
+  --夜淡: #9a8d80;
+  --金: #f0c48a;
+  --文楷: "霞鹜文楷", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  --雅黑: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { background: var(--夜底); scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--夜底);
+  color: var(--夜墨);
+  font-family: var(--雅黑);
+  font-size: 15px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+a:focus-visible { outline: 2px solid var(--金); outline-offset: 4px; border-radius: 4px; }
+
+h1, h2 { font-family: var(--文楷); font-weight: 300; }
+p { margin: 0; }
+
+.跳过 {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  padding: 10px 16px;
+  background: var(--金);
+  color: var(--夜底);
+  z-index: 100;
+}
+.跳过:focus { left: 12px; top: 12px; }
+
+/* ---------- 顶栏 ---------- */
+.顶栏 {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 50;
+  height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 clamp(20px, 4vw, 48px);
+  background: rgba(20, 16, 17, .84);
+  border-bottom: 1px solid var(--夜线淡);
+  backdrop-filter: blur(12px);
+}
+.牌 { display: flex; align-items: baseline; gap: 12px; white-space: nowrap; }
+.牌 b {
+  font-family: var(--文楷);
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: .1em;
+  color: var(--金);
+}
+.牌 span { font-size: 11.5px; letter-spacing: .16em; color: var(--夜淡); }
+.顶注 { font-size: 12px; letter-spacing: .08em; color: var(--夜淡); }
+
+/* ---------- 首屏 ---------- */
+.首屏 {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding: 96px clamp(20px, 4vw, 48px) 56px;
+  background:
+    radial-gradient(70% 90% at 16% 26%, rgba(240, 196, 138, .12), transparent 62%),
+    radial-gradient(58% 80% at 86% 8%, rgba(216, 124, 124, .09), transparent 60%),
+    radial-gradient(120% 100% at 50% 46%, transparent 44%, rgba(0, 0, 0, .55) 100%),
+    var(--夜底);
+}
+.首屏::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(246, 236, 221, .03) 1px, transparent 1px);
+  background-size: 3px 3px;
+  opacity: .6;
+  pointer-events: none;
+}
+
+.厅 {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+  gap: clamp(32px, 5vw, 64px);
+  align-items: center;
+}
+.首文 { max-width: 600px; }
+.眉 { margin-bottom: 18px; font-size: 11.5px; letter-spacing: .22em; color: var(--夜淡); }
+.首屏 h1 {
+  margin: 0;
+  font-size: clamp(56px, 6.6vw, 82px);
+  line-height: 1;
+  letter-spacing: .1em;
+  color: var(--金);
+}
+.银线 {
+  display: block;
+  width: 84px;
+  height: 1px;
+  margin: 22px 0 18px;
+  background: linear-gradient(90deg, var(--金), transparent);
+}
+.站副题 { margin-bottom: 12px; font-size: 16px; letter-spacing: .05em; color: var(--夜墨); }
+.引 { max-width: 520px; font-size: 13.5px; line-height: 1.85; color: #b5a898; }
+
+.入 {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 26px;
+  padding: 11px 24px;
+  border: 1px solid var(--金);
+  border-radius: 999px;
+  background: var(--金);
+  color: var(--夜底);
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  box-shadow: 0 10px 24px rgba(240, 196, 138, .12);
+  transition: background .2s ease, border-color .2s ease;
+}
+.入:hover, .入:focus-visible { background: #f6d3a3; border-color: #f6d3a3; }
+.入 i { font-style: normal; transition: transform .2s ease; }
+.入:hover i { transform: translateX(4px); }
+
+/* 票房数字条 */
+.票房 {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 30px;
+  padding: 16px 0 14px;
+  border-top: 1px solid var(--夜线);
+  border-bottom: 1px solid var(--夜线);
+}
+.票房::before, .票房::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: repeating-linear-gradient(90deg, transparent 0 8px, rgba(246, 236, 221, .18) 8px 13px, transparent 13px 23px);
+}
+.票房::before { top: -2px; }
+.票房::after { bottom: -2px; }
+.票房 div { display: flex; flex-direction: column; gap: 2px; }
+.票房 strong {
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--金);
+  font-variant-numeric: tabular-nums;
+}
+.票房 span { font-size: 10.5px; letter-spacing: .12em; color: var(--夜淡); }
+
+/* 胶片轮 */
+.胶片轮 {
+  position: relative;
+  justify-self: center;
+  width: min(460px, 100%);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(240, 196, 138, .14);
+  animation: 转 90s linear infinite;
+  pointer-events: none;
+}
+.胶片轮::before {
+  content: "";
+  position: absolute;
+  inset: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(240, 196, 138, .09);
+}
+.胶片轮::after {
+  content: "";
+  position: absolute;
+  inset: 16%;
+  border-radius: 50%;
+  border: 1px dashed rgba(240, 196, 138, .08);
+}
+.毂 {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 96px;
+  height: 96px;
+  margin: -48px 0 0 -48px;
+  border-radius: 50%;
+  border: 1px solid rgba(240, 196, 138, .22);
+  background: radial-gradient(circle at 50% 45%, rgba(240, 196, 138, .1), transparent 70%);
+}
+.孔 {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 58px;
+  height: 58px;
+  margin: -29px 0 0 -29px;
+  border-radius: 50%;
+  border: 1px solid rgba(240, 196, 138, .16);
+  transform: rotate(var(--a)) translateY(-150px);
+}
+.孔::after {
+  content: "";
+  position: absolute;
+  inset: 16px;
+  border-radius: 50%;
+  background: var(--夜底);
+  border: 1px solid rgba(240, 196, 138, .12);
+}
+@keyframes 转 { to { transform: rotate(360deg); } }
+
+/* ---------- 三个板块状态 ---------- */
+.幕布区 {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 88px clamp(20px, 4vw, 48px) 96px;
+  border-top: 1px solid var(--夜线淡);
+}
+.节头 h2 {
+  margin: 0 0 10px;
+  font-size: clamp(26px, 3vw, 36px);
+  letter-spacing: .06em;
+  color: var(--夜墨);
+}
+.节头 p { font-size: 14px; color: var(--夜淡); }
+
+.幕目 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 30px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.幕目 li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 132px;
+  padding: 16px 18px 14px;
+  border: 1px solid var(--夜线);
+  border-radius: 10px;
+  background: linear-gradient(160deg, #1f191a, #171213);
+  overflow: hidden;
+  transition: transform .2s ease, border-color .2s ease;
+}
+.幕目 li::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--幕色, var(--金));
+  opacity: .85;
+}
+.幕目 b {
+  font-family: var(--文楷);
+  font-size: 26px;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--幕色, var(--金));
+  font-variant-numeric: tabular-nums;
+}
+.幕目 span { font-size: 14.5px; color: var(--夜墨); letter-spacing: .04em; }
+.幕目 em {
+  margin-top: auto;
+  font-style: normal;
+  font-size: 11px;
+  letter-spacing: .12em;
+  color: var(--夜淡);
+}
+.幕目 a.live {
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 132px;
+  margin: -16px -18px -14px;
+  padding: 16px 18px 14px;
+}
+.幕目 li.live { border-color: #8a6b43; }
+.幕目 li.live:hover { transform: translateY(-3px); border-color: var(--金); }
+.幕目 li.live em { color: var(--金); }
+.幕目 li.待建 { opacity: .62; }
+.幕目 li.待建 .标 { color: var(--夜淡); }
+
+/* ---------- 页脚 ---------- */
+.脚板 {
+  border-top: 1px solid var(--夜线);
+  background: var(--夜舞台);
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+.脚内 {
+  display: grid;
+  grid-template-columns: 1.1fr 1.1fr .9fr;
+  gap: 32px;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 54px clamp(20px, 4vw, 48px) 30px;
+}
+.脚内 h3 {
+  margin: 0 0 10px;
+  font-family: var(--文楷);
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: .12em;
+  color: var(--金);
+}
+.脚内 p { margin: 0 0 6px; font-size: 12px; line-height: 1.85; color: #8e8276; }
+.脚底 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 16px clamp(20px, 4vw, 48px) 30px;
+  font-size: 11.5px;
+  color: #6f655c;
+  border-top: 1px solid #221d1e;
+}
+.脚底 a { color: var(--夜淡); }
+.脚底 a:hover { color: var(--金); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .胶片轮 { animation: none; }
+  .幕目 li, .入 i { transition: none; }
+}
+
+@media (max-width: 1080px) {
+  .厅 { grid-template-columns: 1fr; }
+  .胶片轮 { display: none; }
+  .幕目 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .脚内 { grid-template-columns: 1fr; gap: 22px; }
+}
+@media (max-width: 720px) {
+  .票房 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .顶注 { display: none; }
+  .幕目 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<a class="跳过" href="#幕布">跳到三个板块</a>
+
+<header class="顶栏">
+  <div class="牌"><b>银幕指南</b><span>三个板块</span></div>
+  <div class="顶注">电影信息 · 观众口碑 · 内容特征</div>
+</header>
+
+<main id="顶">
+  <!-- 首屏 -->
+  <section class="首屏" aria-labelledby="站名">
+    <div class="厅">
+      <div class="首文">
+        <p class="眉">MOVIELENS 2023 · 四人协作可视化</p>
+        <h1 id="站名">银幕指南</h1>
+        <span class="银线" aria-hidden="true"></span>
+        <p class="站副题">电影信息、观众口碑与内容特征可视化展示</p>
+        <p class="引">从电影信息、观众口碑与内容特征三个角度认识电影。</p>
+        <a class="入" href="#幕布">查看三个板块 <i aria-hidden="true">→</i></a>
+        <div class="票房" aria-label="数据规模">
+          <div><strong>33,832,162</strong><span>条评分</span></div>
+          <div><strong>86,537</strong><span>部电影</span></div>
+          <div><strong>330,975</strong><span>位用户</span></div>
+          <div><strong>1,128</strong><span>个内容特征</span></div>
+        </div>
+      </div>
+      <div class="胶片轮" aria-hidden="true">
+        <div class="毂"></div>
+        <div class="孔" style="--a:0deg"></div>
+        <div class="孔" style="--a:60deg"></div>
+        <div class="孔" style="--a:120deg"></div>
+        <div class="孔" style="--a:180deg"></div>
+        <div class="孔" style="--a:240deg"></div>
+        <div class="孔" style="--a:300deg"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 三个板块状态 -->
+  <section class="幕布区" id="幕布" aria-labelledby="幕布题">
+    <div class="节头">
+      <h2 id="幕布题">三个板块</h2>
+      <p>三个展示页面制作中。</p>
+    </div>
+    <ol class="幕目">
+<li class="待建" style="--幕色:#61a0a8">
+        <b>01</b><span>认识电影库</span><em class="标">制作中 · 类型/年份/银幕词典</em>
+      </li>
+      <li class="待建" style="--幕色:#d87c7c">
+        <b>02</b><span>理解口碑</span><em class="标">制作中 · 观众/门槛/聚类</em>
+      </li>
+      <li class="待建" style="--幕色:#d7ab82">
+        <b>03</b><span>探索内容</span><em class="标">制作中 · 标签/内容特征/相似片</em>
+      </li>
+    </ol>
+  </section>
+</main>
+
+<footer class="脚板">
+  <div class="脚内">
+    <div>
+      <h3>银幕指南</h3>
+      <p>电影信息、观众口碑与内容特征可视化展示</p>
+      <p>数据：GroupLens MovieLens ml-latest，2023 年 7 月版</p>
+      <p>引用：Harper &amp; Konstan，2015，ACM TiiS</p>
+    </div>
+    <div>
+      <h3>三个板块</h3>
+      <p>hjp · 电影基本信息（制作中）</p>
+      <p>zjn · 观众口碑（制作中）</p>
+      <p>tcl · 标签与内容特征（制作中）</p>
+    </div>
+    <div>
+      <h3>当前版本</h3>
+      <p>当前为项目入口，展示页面待交付。</p>
+      <p>零 CDN，双击 index.html 即可打开；建议 1280×720 以上窗口浏览。</p>
+    </div>
+  </div>
+  <div class="脚底">
+    <span>2026 秋季学期可视化课程作业 · 四人小组</span>
+    <a href="#顶">回到顶部 ↑</a>
+  </div>
+</footer>
+</body>
+</html>
+
+

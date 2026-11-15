@@ -1,0 +1,332 @@
+/* 银幕指南 · 全站主题
+   配色与 成品网页/vintage.js 一致，只用十色，不额外加色。 */
+
+@font-face {
+  font-family: "霞鹜文楷";
+  src: url("LXGWWenKai-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --底: #fef8ef;
+  --纸: #fffaf2;
+  --墨: #4b565b;
+  --次墨: #6e7074;
+  --淡墨: #8a8578;
+  --线: #e6dcc8;
+  --强调: #724e58;
+  --一: #d87c7c;
+  --二: #919e8b;
+  --三: #d7ab82;
+  --五: #61a0a8;
+  --圆角: 14px;
+  --页宽: 1180px;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--底);
+  color: var(--墨);
+  font-family: "霞鹜文楷", "Noto Sans SC", "Microsoft YaHei",
+               "PingFang SC", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+a { color: var(--强调); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:focus-visible { outline: 2px solid var(--五); outline-offset: 3px; }
+
+.页 { max-width: var(--页宽); margin: 0 auto; padding: 0 24px 56px; }
+
+/* 页头 */
+.页头 {
+  max-width: var(--页宽);
+  margin: 0 auto;
+  padding: 36px 24px 26px;
+  border-bottom: 1px solid var(--线);
+}
+
+.面包 { font-size: 13px; color: var(--淡墨); margin: 0 0 18px; }
+.面包 a { color: var(--淡墨); }
+.面包 span { margin: 0 6px; }
+
+.栏目 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  letter-spacing: .08em;
+  color: var(--强调);
+}
+
+h1 {
+  margin: 0 0 10px;
+  font-size: 30px;
+  line-height: 1.35;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+
+.导语 {
+  margin: 0;
+  max-width: 760px;
+  font-size: 15px;
+  color: var(--次墨);
+}
+
+/* 图卡 */
+.图卡 {
+  background: var(--纸);
+  border: 1px solid var(--线);
+  border-radius: var(--圆角);
+  padding: 20px 24px 18px;
+  margin-top: 18px;
+}
+
+.夜场 {
+  background: #1c1819;
+  border-color: #3a3233;
+}
+
+.夜场 .结论 { color: #f0c48a; }
+
+.结论 {
+  margin: 0 0 10px;
+  font-size: 17px;
+  line-height: 1.6;
+  font-weight: 600;
+  color: var(--强调);
+}
+
+.图 { width: 100%; height: 300px; }
+.图-竞速 { height: 460px; }
+.图-热力 { height: 420px; }
+.图-仪表 { height: 320px; }
+.图-河流 { height: 360px; }
+.图-饼 { height: 380px; }
+
+/* 胶片条 */
+.胶片带 {
+  display: flex;
+  gap: 6px;
+  padding: 22px 12px;
+  background: #120e0f;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.胶片带::before,
+.胶片带::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 9px;
+  background: repeating-linear-gradient(90deg,
+    transparent 0 6px, #f6ecdd 6px 11px, transparent 11px 20px);
+  opacity: .26;
+  pointer-events: none;
+}
+
+.胶片带::before { top: 4px; }
+.胶片带::after { bottom: 4px; }
+
+.胶片格 {
+  flex: 0 1 0;
+  min-width: 92px;
+  min-height: 96px;
+  position: relative;
+  background: #241f20;
+  border: 1px solid #3d3435;
+  border-radius: 4px;
+  padding: 16px 10px 12px;
+  overflow: hidden;
+}
+
+.胶片格::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 80% at 20% 0%, rgba(240,196,138,.10), transparent 55%);
+  pointer-events: none;
+}
+
+.片名 { display: block; font-size: 12px; color: #cbbfa9; letter-spacing: .04em; }
+.片值 {
+  display: block;
+  margin: 6px 0 3px;
+  font-size: clamp(15px, 1.9vw, 26px);
+  line-height: 1.1;
+  color: #f0c48a;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.片注 { display: block; font-size: 11px; color: #8f8579; }
+
+/* 银幕与座位 */
+.银幕条 {
+  height: 6px;
+  margin: 0 10px 12px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, transparent, #f0c48a 25%, #d87c7c 50%, #f0c48a 75%, transparent);
+  opacity: .75;
+}
+
+.影厅 {
+  background: #120e0f;
+  border-radius: 10px;
+  padding: 18px 16px 14px;
+}
+
+.影厅幕 {
+  max-width: 760px;
+  height: 26px;
+  margin: 0 auto 18px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #3a2f30, #f0c48a 22%, #f6ecdd 50%, #f0c48a 78%, #3a2f30);
+  color: #1c1819;
+  text-align: center;
+  font-size: 11px;
+  line-height: 26px;
+  letter-spacing: .35em;
+}
+
+.座位图 {
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+  gap: 6px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.座位 {
+  aspect-ratio: 1 / 1;
+  border-radius: 7px 7px 3px 3px;
+  position: relative;
+  animation: 亮灯 .55s ease both;
+}
+
+.座位::after {
+  content: "";
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: -3px;
+  height: 4px;
+  border-radius: 2px;
+  background: #0d0a0b;
+  opacity: .6;
+}
+
+@keyframes 亮灯 {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.座位图例 {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 20px;
+  margin-top: 16px;
+  font-size: 12px;
+  color: #cbbfa9;
+}
+
+.图例点 {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .座位 { animation: none; }
+}
+
+/* 页脚 */
+.页脚 {
+  max-width: var(--页宽);
+  margin: 0 auto;
+  padding: 20px 24px 40px;
+  border-top: 1px solid var(--线);
+  font-size: 12px;
+  color: var(--淡墨);
+}
+.页脚 p { margin: 0 0 4px; }
+
+/* 首页 */
+.首页头 {
+  max-width: var(--页宽);
+  margin: 0 auto;
+  padding: 64px 24px 34px;
+}
+
+.首页头 h1 {
+  font-size: 44px;
+  letter-spacing: .04em;
+  margin-bottom: 6px;
+}
+
+.副题 {
+  margin: 0 0 16px;
+  font-size: 18px;
+  color: var(--强调);
+}
+
+.首页数字 {
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--次墨);
+  font-variant-numeric: tabular-nums;
+}
+
+.板块网格 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 26px;
+}
+
+.板块卡 {
+  display: block;
+  background: var(--纸);
+  border: 1px solid var(--线);
+  border-radius: var(--圆角);
+  padding: 20px 22px;
+  color: var(--墨);
+}
+
+.板块卡 h2 { margin: 0 0 4px; font-size: 18px; }
+.板块卡 p { margin: 0; font-size: 13px; color: var(--次墨); }
+
+.板块头 {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.板块序 { font-size: 12px; color: var(--淡墨); letter-spacing: .08em; }
+.负责人 { font-size: 12px; color: var(--强调); }
+.状态 { font-size: 12px; color: var(--淡墨); }
+
+.板块卡.待建 { opacity: .62; }
+.板块卡.待建:hover { text-decoration: none; }
+
+/* 小屏 */
+@media (max-width: 680px) {
+  h1 { font-size: 24px; }
+  .首页头 h1 { font-size: 32px; }
+  .板块网格 { grid-template-columns: 1fr; }
+  .图卡 { padding: 16px 14px 14px; }
+}

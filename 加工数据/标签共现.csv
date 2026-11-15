@@ -1,0 +1,436 @@
+﻿标签甲,标签乙,共同影片数
+murder,violence,1148
+murder,revenge,793
+comedy,funny,702
+revenge,violence,613
+drama,romance,459
+action,violence,423
+comedy,romance,407
+murder,thriller,403
+action,murder,346
+horror,murder,326
+based on a book,drama,320
+atmospheric,murder,317
+comedy,drama,305
+based on a book,murder,297
+drama,murder,296
+action,revenge,295
+action,sci-fi,266
+dark comedy,murder,265
+drama,thriller,263
+funny,romance,262
+action,adventure,260
+action,thriller,259
+thriller,violence,249
+drama,violence,248
+based on a book,romance,244
+atmospheric,cinematography,243
+horror,violence,240
+action,comedy,231
+cinematography,murder,228
+horror,thriller,227
+dystopia,sci-fi,221
+action,funny,216
+cinematography,drama,215
+murder,sci-fi,212
+atmospheric,violence,211
+adventure,fantasy,211
+funny,violence,211
+dark,murder,210
+dark comedy,violence,206
+funny,murder,202
+sci-fi,violence,199
+coming of age,drama,199
+dark,violence,198
+social commentary,violence,194
+murder,social commentary,194
+comedy,violence,191
+atmospheric,drama,190
+murder,stylized,190
+comedy,murder,187
+comedy,dark comedy,186
+cinematography,violence,183
+atmospheric,dark,181
+funny,quirky,180
+murder,romance,179
+murder,twist ending,178
+based on a book,violence,177
+comedy,quirky,173
+revenge,thriller,172
+action,drama,171
+atmospheric,stylized,170
+drama,revenge,167
+atmospheric,based on a book,167
+drama,funny,166
+action,fantasy,165
+classic,comedy,165
+classic,murder,161
+atmospheric,surreal,159
+adventure,comedy,159
+adventure,funny,157
+classic,funny,157
+fantasy,romance,157
+cinematography,visually appealing,156
+based on a book,classic,156
+dark comedy,funny,154
+based on a book,cinematography,153
+murder,surreal,153
+stylized,violence,153
+dystopia,violence,151
+coming of age,romance,151
+murder,visually appealing,148
+drama,social commentary,147
+adventure,based on a book,147
+violence,visually appealing,145
+coming of age,funny,143
+atmospheric,visually appealing,143
+atmospheric,horror,141
+comedy,coming of age,141
+based on a book,coming of age,140
+cinematography,romance,139
+based on a book,revenge,137
+comedy,fantasy,136
+sci-fi,thriller,136
+based on a book,fantasy,135
+action,romance,135
+funny,revenge,135
+dystopia,murder,135
+based on a book,thriller,133
+thriller,twist ending,132
+cinematography,surreal,131
+cinematography,stylized,131
+classic,drama,131
+atmospheric,thriller,130
+horror,revenge,130
+adventure,violence,129
+fantasy,funny,129
+drama,thought-provoking,126
+adventure,romance,126
+adventure,sci-fi,125
+funny,sci-fi,125
+coming of age,violence,124
+based on a book,funny,124
+quirky,romance,124
+romance,violence,124
+stylized,visually appealing,122
+action,dystopia,121
+comedy,sci-fi,121
+classic,romance,121
+atmospheric,revenge,120
+atmospheric,romance,120
+classic,violence,120
+fantasy,sci-fi,120
+dark,drama,118
+based on a book,comedy,118
+comedy,revenge,118
+sci-fi,time travel,117
+surreal,violence,116
+drama,sci-fi,115
+cinematography,dark,115
+romance,sci-fi,115
+drama,visually appealing,114
+adventure,murder,113
+coming of age,murder,113
+action,cinematography,112
+action,based on a book,111
+atmospheric,classic,111
+cinematography,thriller,111
+stylized,surreal,110
+fantasy,violence,109
+twist ending,violence,109
+action,visually appealing,109
+revenge,social commentary,108
+fantasy,surreal,107
+revenge,sci-fi,107
+atmospheric,sci-fi,107
+drama,horror,106
+drama,fantasy,106
+action,atmospheric,106
+dark,thriller,105
+surreal,visually appealing,105
+romance,visually appealing,105
+dark,revenge,104
+comedy,social commentary,103
+sci-fi,visually appealing,103
+based on a book,social commentary,103
+cinematography,revenge,102
+dystopia,social commentary,102
+revenge,romance,101
+dark,surreal,101
+funny,social commentary,101
+drama,surreal,101
+horror,sci-fi,101
+based on a book,sci-fi,100
+social commentary,thought-provoking,100
+murder,quirky,99
+dark comedy,quirky,99
+sci-fi,social commentary,98
+action,stylized,98
+dark,stylized,97
+based on a book,dark,97
+drama,stylized,97
+revenge,stylized,97
+dark comedy,drama,96
+based on a book,visually appealing,95
+fantasy,murder,95
+action,classic,94
+adventure,drama,94
+dark comedy,surreal,93
+funny,visually appealing,91
+dark,horror,91
+dark comedy,revenge,91
+cinematography,thought-provoking,89
+thought-provoking,violence,88
+quirky,surreal,88
+adventure,classic,88
+revenge,visually appealing,87
+action,dark,87
+murder,thought-provoking,87
+romance,stylized,86
+fantasy,visually appealing,86
+dark,fantasy,84
+based on a book,stylized,84
+dark,visually appealing,84
+classic,revenge,84
+atmospheric,thought-provoking,83
+action,social commentary,83
+drama,quirky,83
+drama,twist ending,82
+drama,psychology,82
+adventure,visually appealing,82
+romance,thriller,82
+dark comedy,social commentary,81
+sci-fi,thought-provoking,81
+dark,sci-fi,81
+cinematography,horror,81
+quirky,stylized,81
+based on a book,surreal,81
+cinematography,sci-fi,81
+funny,surreal,81
+adventure,coming of age,80
+atmospheric,social commentary,80
+sci-fi,surreal,79
+adventure,revenge,79
+action,horror,79
+funny,horror,79
+coming of age,revenge,79
+atmospheric,twist ending,79
+adventure,cinematography,78
+coming of age,fantasy,78
+adventure,thriller,78
+stylized,thriller,78
+classic,fantasy,78
+murder,time travel,77
+murder,psychology,77
+horror,surreal,77
+comedy,surreal,77
+based on a book,thought-provoking,76
+cinematography,social commentary,76
+cinematography,funny,76
+based on a book,horror,76
+atmospheric,fantasy,76
+horror,twist ending,76
+surreal,thought-provoking,75
+funny,stylized,75
+classic,coming of age,74
+romance,surreal,74
+atmospheric,dystopia,74
+cinematography,classic,73
+based on a book,dystopia,73
+quirky,violence,72
+comedy,time travel,72
+cinematography,coming of age,70
+comedy,visually appealing,70
+comedy,horror,70
+coming of age,quirky,70
+social commentary,thriller,70
+cinematography,fantasy,69
+social commentary,visually appealing,69
+classic,thriller,69
+dark,social commentary,68
+dark,dystopia,68
+dark comedy,horror,68
+revenge,twist ending,67
+romance,time travel,67
+dark comedy,stylized,67
+fantasy,revenge,67
+dark,thought-provoking,66
+time travel,violence,65
+dark,romance,65
+based on a book,twist ending,65
+psychology,violence,64
+classic,stylized,64
+comedy,thriller,63
+coming of age,social commentary,63
+atmospheric,funny,63
+dystopia,thriller,63
+atmospheric,coming of age,62
+funny,thought-provoking,62
+romance,social commentary,62
+fantasy,horror,62
+surreal,thriller,62
+sci-fi,twist ending,62
+dark,funny,62
+classic,sci-fi,61
+comedy,stylized,61
+social commentary,surreal,60
+thought-provoking,visually appealing,60
+action,twist ending,60
+cinematography,twist ending,60
+classic,dark,59
+based on a book,quirky,59
+funny,thriller,59
+dark,dark comedy,59
+fantasy,stylized,59
+surreal,twist ending,58
+adventure,atmospheric,58
+sci-fi,stylized,58
+classic,social commentary,57
+atmospheric,quirky,57
+romance,thought-provoking,57
+quirky,revenge,57
+cinematography,comedy,57
+fantasy,time travel,57
+dystopia,surreal,56
+atmospheric,dark comedy,56
+dystopia,revenge,56
+thriller,visually appealing,56
+dark comedy,thriller,56
+dark,twist ending,55
+fantasy,quirky,54
+action,dark comedy,54
+funny,time travel,53
+revenge,surreal,53
+based on a book,dark comedy,53
+quirky,social commentary,53
+coming of age,surreal,52
+stylized,twist ending,52
+cinematography,quirky,52
+action,time travel,52
+coming of age,visually appealing,52
+dystopia,visually appealing,51
+atmospheric,psychology,51
+dark comedy,romance,51
+psychology,surreal,51
+horror,stylized,51
+coming of age,sci-fi,51
+action,thought-provoking,50
+psychology,thought-provoking,50
+psychology,twist ending,50
+cinematography,dark comedy,49
+cinematography,psychology,48
+based on a book,psychology,48
+classic,quirky,48
+thought-provoking,twist ending,48
+psychology,thriller,48
+social commentary,stylized,47
+dystopia,stylized,47
+classic,surreal,47
+adventure,stylized,47
+funny,twist ending,47
+adventure,dark,47
+dark,psychology,46
+classic,horror,46
+coming of age,dark,46
+dystopia,thought-provoking,46
+atmospheric,comedy,46
+horror,social commentary,45
+coming of age,dark comedy,44
+action,coming of age,44
+horror,romance,44
+action,surreal,44
+quirky,visually appealing,43
+adventure,social commentary,43
+drama,dystopia,43
+comedy,thought-provoking,43
+adventure,surreal,43
+fantasy,thriller,43
+comedy,dark,43
+dark comedy,visually appealing,43
+thought-provoking,thriller,42
+adventure,quirky,42
+twist ending,visually appealing,42
+classic,visually appealing,42
+dark comedy,twist ending,41
+stylized,thought-provoking,41
+cinematography,dystopia,41
+comedy,twist ending,41
+adventure,time travel,41
+romance,twist ending,40
+dystopia,time travel,40
+revenge,thought-provoking,40
+surreal,time travel,39
+psychology,stylized,39
+action,quirky,39
+dark,quirky,39
+classic,dark comedy,38
+social commentary,twist ending,38
+coming of age,thought-provoking,38
+dystopia,romance,37
+based on a book,time travel,37
+adventure,thought-provoking,36
+psychology,romance,36
+coming of age,horror,35
+adventure,dystopia,35
+thriller,time travel,35
+fantasy,thought-provoking,35
+quirky,sci-fi,35
+coming of age,stylized,35
+classic,thought-provoking,34
+dystopia,fantasy,34
+dystopia,funny,34
+adventure,twist ending,33
+psychology,sci-fi,33
+horror,visually appealing,32
+classic,twist ending,32
+horror,psychology,32
+atmospheric,time travel,32
+fantasy,twist ending,31
+psychology,social commentary,31
+dark comedy,psychology,31
+fantasy,social commentary,30
+coming of age,psychology,30
+classic,dystopia,30
+revenge,time travel,29
+drama,time travel,29
+dark comedy,thought-provoking,29
+quirky,thought-provoking,29
+dystopia,horror,29
+psychology,revenge,29
+funny,psychology,28
+dark comedy,fantasy,28
+dark comedy,sci-fi,28
+comedy,psychology,27
+adventure,horror,27
+psychology,visually appealing,27
+classic,psychology,27
+time travel,twist ending,26
+thought-provoking,time travel,25
+quirky,thriller,25
+dark comedy,dystopia,25
+classic,time travel,25
+psychology,quirky,24
+social commentary,time travel,24
+dystopia,twist ending,24
+time travel,visually appealing,23
+comedy,dystopia,23
+horror,time travel,23
+horror,thought-provoking,23
+dystopia,quirky,22
+cinematography,time travel,22
+quirky,twist ending,22
+fantasy,psychology,21
+coming of age,time travel,21
+adventure,dark comedy,20
+coming of age,dystopia,19
+coming of age,thriller,19
+stylized,time travel,17
+quirky,time travel,17
+action,psychology,17
+coming of age,twist ending,16
+adventure,psychology,16
+dark,time travel,15
+psychology,time travel,13
+dystopia,psychology,12
+horror,quirky,10
+dark comedy,time travel,8
