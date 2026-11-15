@@ -9,14 +9,14 @@ from collections import Counter
 from pathlib import Path
 
 from pyecharts import options as opts
-from pyecharts.charts import Boxplot, Custom, Graph, HeatMap, Line, Parallel, Pie, Scatter, TreeMap
+from pyecharts.charts import Bar, Boxplot, Custom, Graph, HeatMap, Line, Parallel, Pie, Scatter, TreeMap
 from pyecharts.commons.utils import JsCode
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB = ROOT / "成品网页"
 COLORS = ["#d87c7c", "#919e8b", "#d7ab82", "#6e7074", "#61a0a8", "#efa18d"]
 VOLUME_COLORS = ["#e28a8a", "#acc09a", "#e6ba7c", "#c4cad2", "#58b9ce", "#c5a1d1"]
-TEXT = {"fontSize": 16, "color": "#d7ab82", "fontFamily": "Microsoft YaHei"}
+TEXT = {"fontSize": 16, "color": "#c6b8a6", "fontFamily": "Microsoft YaHei"}
 
 
 def axis(name="", kind="value", **settings):
@@ -131,7 +131,7 @@ def build_distribution(data):
                'name': row['标签']} for index, row in enumerate(rows)])
     chart.options['series'][0]['encode'] = {'x': [1, 2, 3], 'y': 0}
     chart.options['series'][0]['clip'] = False
-    chart.options['xAxis'] = [axis('导演加权均分', min=.5, max=5, interval=.5,
+    chart.options['xAxis'] = [axis('导演观众均分', min=.5, max=5, interval=.5,
         nameLocation='middle', nameGap=32)]
     chart.options['yAxis'] = [axis(kind='category', data=[row['标签'] for row in rows], inverse=True,
                                   axisLabel={'show': False})]
@@ -147,13 +147,13 @@ def build_discovery(data):
     selected = sorted((row for row in rows if row['编号'] in data['C4']['推荐']),
                       key=lambda row: (-row['y'], row['x'], row['编号']))
     points = {}
-    for row in selected:
+    for index, row in enumerate(selected):
         points.setdefault((row['x'], row['y']), []).append({
             'name': row['中文名'] or row['名'], 'id': row['编号'],
-            'score': row['y'], 'votes': row['x'], 'works': row['作品数']})
+            'score': row['y'], 'votes': row['x'], 'works': row['作品数'], 'cardIndex': index})
     chart = Scatter()
     chart.add_xaxis([])
-    chart.add_yaxis('全部导演', [{'value': [row['x'], row['y']], 'id': row['编号'],
+    chart.add_yaxis('比较样本', [{'value': [row['x'], row['y']], 'id': row['编号'],
         'name': row['中文名'] or row['名'], 'works': row['作品数'],
         'score': row['y'], 'votes': row['x']} for row in rows],
         symbol_size=5, itemstyle_opts=opts.ItemStyleOpts(color=COLORS[3], opacity=.35),
@@ -163,6 +163,7 @@ def build_discovery(data):
         symbol_size=15, itemstyle_opts=opts.ItemStyleOpts(color=COLORS[2], border_color='#f6ecdd', border_width=1),
         label_opts=opts.LabelOpts(is_show=True, position='inside', color='#171214', font_size=11,
             formatter=JsCode("function(p){return p.data.members.length>1?String(p.data.members.length):'';}")))
+    chart.options['series'][1]['emphasis'] = {'itemStyle': {'color': '#f6ecdd', 'shadowBlur': 16, 'shadowColor': '#d7ab8266'}}
     chart.options['series'][1]['markArea'] = {'silent': True, 'label': {'show': False},
         'itemStyle': {'color': COLORS[2], 'opacity': .06},
         'data': [[{'xAxis': 10000, 'yAxis': 4}, {'xAxis': midpoint, 'yAxis': 4.5}]]}
@@ -174,7 +175,7 @@ def build_discovery(data):
     chart.options["xAxis"] = [axis("评分记录（对数）", "log", min=10000, max=1000000,
         nameLocation="middle", nameGap=46,
         axisLabel={**TEXT, "formatter": JsCode("function(v){return v/10000+'万';}")})]
-    chart.options["yAxis"] = [axis("加权均分 / 5", min=2, max=4.5, interval=.5)]
+    chart.options["yAxis"] = [axis("观众均分 / 5", min=2, max=4.5, interval=.5)]
 
     credits = Custom()
     credits.add('发现导演', render_item=JsCode(
@@ -191,7 +192,8 @@ def build_discovery(data):
         "{type:'line',shape:{x1:x,y1:y+(compact?70:60),x2:x+cw,y2:y+(compact?70:60)},style:{stroke:'#705357',opacity:.35}}]};}"),
         data=[{'value': [index, row['y'], row['中文名'] or row['名'], row['x'], row['作品数']],
                'id': row['编号'], 'name': row['中文名'] or row['名'],
-               'score': row['y'], 'votes': row['x'], 'works': row['作品数']} for index, row in enumerate(selected)])
+               'score': row['y'], 'votes': row['x'], 'works': row['作品数'],
+               'pointIndex': list(points).index((row['x'], row['y']))} for index, row in enumerate(selected)])
     credits.options['series'][0]['coordinateSystem'] = 'none'
     chart.options['series'].append(credits.options['series'][0])
     chart.options['graphic'] = [
@@ -202,7 +204,7 @@ def build_discovery(data):
     return finish(chart, (58, 390, 60, 80),
         {'grid': {'left': 48, 'right': 18, 'bottom': 720}},
         {'formatter': JsCode("function(p){var d=p.data,people=d.members||[d];return (people.length>1?people.length+' 位导演重合<br/><br/>':'')+people.map(function(person){"
-            "return echarts.format.encodeHTML(person.name)+'<br/>加权均分 '+person.score.toFixed(3)+' / 5<br/>'"
+            "return echarts.format.encodeHTML(person.name)+'<br/>观众均分 '+person.score.toFixed(3)+' / 5<br/>'"
             "+person.votes.toLocaleString()+' 条评分 · '+person.works+' 部作品';}).join('<br/><br/>');}")}, max_width=760)
 
 
@@ -325,6 +327,9 @@ def build_collaboration():
         emphasis_opts={'focus': 'adjacency', 'label': {'show': True, 'fontSize': 18},
                        'lineStyle': {'color': '#f6ecdd', 'width': 3, 'opacity': 1}})
     chart.options['color'] = COLORS[:2]
+    chart.options['strengthEncoding'] = JsCode(
+        "function(count){return {symbolSize:Math.min(32,12+Math.sqrt(count)*3),"
+        "lineStyle:{width:Math.min(6,1+Math.sqrt(count)),opacity:count>1?.75:.25}};}")
     chart.options['series'][0].update({'center': None, 'zoom': 1,
         'left': 'center', 'top': 'middle', 'right': None, 'bottom': None, 'width': 520, 'height': 520,
         'scaleLimit': {'min': .3, 'max': 5}, 'labelLayout': {'hideOverlap': True}})
@@ -405,39 +410,43 @@ def build_score_comparison(data):
         chart.add(name, [{'id': row['编号'], 'name': name, 'rank': index + 1,
             'value': [row['加权均分'], row['作品数'], row['累计人数'] / 10000],
             'ratings': row['累计人数']}],
-            linestyle_opts=opts.LineStyleOpts(color=colors[index], width=3 if index == 0 else 2, opacity=.9),
-            emphasis_opts={'focus': 'series', 'lineStyle': {'width': 4, 'opacity': 1, 'color': '#f6ecdd'}})
+            linestyle_opts=opts.LineStyleOpts(color=colors[index], width=2, opacity=.75),
+            emphasis_opts={'focus': 'series', 'lineStyle': {'width': 4, 'opacity': 1}})
+        chart.options['series'][-1]['blur'] = {'lineStyle': {'opacity': .08}}
     chart.options.update({'backgroundColor': 'transparent', 'color': colors, 'textStyle': TEXT,
-        'animationDuration': 900,
+        'animationDuration': 900, 'animationDurationUpdate': 250,
+        'focusStyles': {'active': {'width': 4, 'opacity': 1}, 'background': {'width': 1.5, 'opacity': .12}},
         'legend': {'show': True, 'orient': 'vertical', 'left': 8, 'top': 112,
             'itemWidth': 24, 'itemHeight': 3, 'itemGap': 27, 'icon': 'rect', 'selectedMode': False,
+            'emphasis': {'textStyle': {'color': '#d7ab82'}},
             'textStyle': {'fontSize': 16, 'lineHeight': 24, 'color': '#f6ecdd', 'fontFamily': 'Microsoft YaHei'},
             'data': [row['中文名'] or row['名'] for row in data['C3']['高分榜']]},
         'tooltip': {'trigger': 'item', 'confine': True, 'backgroundColor': '#1d1819',
             'borderColor': '#846662', 'borderWidth': 1, 'textStyle': {**TEXT, 'color': '#f6ecdd'},
             'formatter': JsCode("function(p){var d=p.data;return echarts.format.encodeHTML(d.name)"
-                "+'<br/>加权均分 '+d.value[0].toFixed(3)+' / 5<br/>'+d.value[1]+' 部作品<br/>'"
+                "+'<br/>观众均分 '+d.value[0].toFixed(3)+' / 5<br/>'+d.value[1]+' 部作品<br/>'"
                 "+d.ratings.toLocaleString()+' 条评分记录';}")}})
     return chart.dump_options()
 
 
-def build_score_distribution(single_film=False):
-    labels = [f'{index / 2:g}' for index in range(1, 11)] if single_film else [
-        f'{index / 2:g}–{(index + 1) / 2:g}' for index in range(1, 10)]
+def build_film_ratings():
+    labels = [f'{index / 2:g}' for index in range(1, 11)]
     chart = Custom()
-    chart.add('评分记录' if single_film else '作品数', render_item=JsCode(
+    chart.add('评分记录', render_item=JsCode(
         "function(p,api){var point=api.coord([api.value(0),api.value(1)]),base=api.coord([api.value(0),0]);"
         "return {type:'group',children:[{type:'line',shape:{x1:point[0],y1:base[1],x2:point[0],y2:point[1]},"
         "style:{stroke:'#d87c7c',lineWidth:1.5,opacity:.65}},"
         "{type:'circle',shape:{cx:point[0],cy:point[1],r:4},style:{fill:'#d87c7c'}}]};}"), data=[])
     chart.options['series'][0]['encode'] = {'x': 0, 'y': 1}
-    chart.options['xAxis'] = [axis('评分' if single_film else '作品均分', kind='category', data=labels,
-        axisLabel={**TEXT, 'interval': 0 if single_film else 1}, nameLocation='middle', nameGap=30)]
-    chart.options['yAxis'] = [axis('评分记录' if single_film else '作品数', min=0, minInterval=1, boundaryGap=[0, .15],
+    chart.options['xAxis'] = [axis('评分', kind='category', data=labels,
+        axisLabel={**TEXT, 'interval': 0}, nameLocation='middle', nameGap=30)]
+    chart.options['yAxis'] = [axis('评分记录', min=0, minInterval=1, boundaryGap=[0, .15],
         axisLabel={**TEXT, 'formatter': JsCode("function(v){return v>=10000?v/10000+'万':String(v);}")})]
-    unit = '条评分' if single_film else '部作品'
-    return finish(chart, (52, 24, 32, 50), tooltip={'formatter': JsCode(
-        "function(p){return p.name+' 分<br/>'+p.value[1].toLocaleString()+' " + unit + "'"
+    return finish(chart, (52, 24, 32, 50), mobile={
+        'grid': {'left': 42, 'right': 10}, 'xAxis': [{'axisLabel': {'fontSize': 12,
+            'formatter': JsCode("function(v){return Number(v)<1?v.replace('0.','.'):v;}")}}],
+        'yAxis': [{'axisLabel': {'fontSize': 12}}]}, max_width=480, tooltip={'formatter': JsCode(
+        "function(p){return p.name+' 分<br/>'+p.value[1].toLocaleString()+' 条评分'"
         "+(p.data.share===undefined?'':' · '+p.data.share.toFixed(1)+'%');}")})
 
 
@@ -470,10 +479,13 @@ def build_templates():
     threshold = Line()
     threshold.add_xaxis([])
     for index, color in enumerate(COLORS[:3]):
-        threshold.add_yaxis('', [], color=color, is_step='start', symbol=['circle', 'diamond', 'triangle'][index],
+        threshold.add_yaxis('', [], color=color, is_step='start', is_symbol_show=False, symbol='none',
             symbol_size=6, label_opts=opts.LabelOpts(is_show=False),
             linestyle_opts=opts.LineStyleOpts(width=2.5, type_=['solid', 'dashed', 'dotted'][index]),
             areastyle_opts=opts.AreaStyleOpts(opacity=.05))
+        threshold.options['series'][-1]['markPoint'] = {'symbol': ['circle', 'diamond', 'triangle'][index],
+            'symbolSize': 12, 'label': {'show': False},
+            'itemStyle': {'color': color, 'borderColor': '#f6ecdd', 'borderWidth': 1.5}, 'data': []}
     threshold.options['xAxis'] = [axis('评分门槛 / 5', min=.5, max=5, interval=.5, nameLocation='middle', nameGap=30)]
     threshold.options['yAxis'] = [axis('达到门槛的作品', min=0, max=100, interval=25,
         axisLabel={**text, 'formatter': '{value}%'})]
@@ -499,7 +511,7 @@ def build_templates():
         {'name': 'role', 'type': 'int'}, {'name': 'badge', 'type': 'ordinal'},
         {'name': 'image', 'type': 'ordinal'}, {'name': 'ratio', 'type': 'float'}], 'encode': {'x': 0, 'y': 1}})
     posters.options['xAxis'] = [axis('上映年份', min='dataMin', max='dataMax', minInterval=1, position='top', nameLocation='middle', nameGap=30,
-        axisLabel={**text, 'hideOverlap': True, 'formatter': JsCode('function(v){return String(v);}')})]
+        axisLabel={**text, 'hideOverlap': True, 'showMaxLabel': False, 'formatter': JsCode('function(v){return String(v);}')})]
     posters.options['yAxis'] = [axis(show=False, inverse=True, min=0, max=144)]
     role_labels = Custom()
     role_labels.add('研究对象', render_item=JsCode(
@@ -528,19 +540,31 @@ def build_templates():
     gaps = Custom()
     gaps.add('发行间隔', render_item=JsCode(
         "function(p,api){var a=api.coord([api.value(0),api.value(2)]),b=api.coord([api.value(1),api.value(2)]),"
-        "c=" + repr(COLORS[:3]) + "[api.value(3)];"
-        "if(api.value(4)===0)return {type:'polygon',shape:{points:[[a[0],a[1]-6],[a[0]+6,a[1]],[a[0],a[1]+6],[a[0]-6,a[1]]]},"
-        "style:{fill:c},emphasis:{style:{fill:'#f6ecdd'}}};"
-        "var inside=b[0]-a[0]>=46,end=b[0]>p.coordSys.x+p.coordSys.width-42;"
-        "return {type:'group',children:[{type:'rect',shape:{x:a[0],y:a[1]-7,width:b[0]-a[0],height:14,r:2},"
-        "style:{fill:c,opacity:.55},emphasis:{style:{fill:c,opacity:1}}},"
-        "{type:'line',shape:{x1:b[0],y1:b[1]-11,x2:b[0],y2:b[1]+11},style:{stroke:c,lineWidth:2}},"
-        "{type:'text',style:{x:inside?(a[0]+b[0])/2:end?a[0]-8:b[0]+8,y:a[1],text:api.value(4)+' 年',fontSize:14,"
-        "fontFamily:'Microsoft YaHei',fill:'#f6ecdd',align:inside?'center':end?'right':'left',verticalAlign:'middle'}}]};}"), data=[])
-    gaps.options['xAxis'] = [axis('上映年份', min='dataMin', max='dataMax', minInterval=1, position='top', nameLocation='middle', nameGap=30,
-        axisLabel={**text, 'hideOverlap': True, 'formatter': JsCode('function(v){return String(v);}')})]
+        "c=" + repr(COLORS[:3]) + "[api.value(2)],span=b[0]-a[0],h=Math.min(52,span*.35),children=["
+        "{type:'line',shape:{x1:a[0],y1:a[1],x2:b[0],y2:b[1]},style:{stroke:c,opacity:.25}},"
+        "{type:'bezierCurve',shape:{x1:a[0],y1:a[1],x2:b[0],y2:b[1],"
+        "cpx1:a[0]+span*.3,cpy1:a[1]-h,cpx2:b[0]-span*.3,cpy2:b[1]-h},"
+        "style:{stroke:c,lineWidth:2,fill:null,opacity:.65},emphasis:{style:{stroke:'#f6ecdd',lineWidth:3,opacity:1}}}];"
+        "if(api.value(4)&&span>62)children.push({type:'text',silent:true,style:{"
+        "x:(a[0]+b[0])/2,y:a[1]-h*.75-12,text:api.value(3)+' 年',fontSize:14,"
+        "fontFamily:'Georgia',fill:'#e2d3bd',align:'center',verticalAlign:'bottom'}});"
+        "return {type:'group',children:children};}"), data=[])
+    releases = Custom()
+    releases.add('发行年份', render_item=JsCode(
+        "function(p,api){var q=api.coord([api.value(0),api.value(1)]),n=api.value(2),"
+        "c=" + repr(COLORS[:3]) + "[api.value(1)],r=4+Math.min(4,Math.sqrt(n-1)*2);"
+        "return {type:'group',children:[{type:'line',shape:{x1:q[0],y1:q[1]+r,x2:q[0],y2:q[1]+18},"
+        "style:{stroke:c,opacity:.5}}, {type:'circle',shape:{cx:q[0],cy:q[1],r:r},"
+        "style:{fill:c,stroke:'#171214',lineWidth:2},emphasis:{style:{fill:'#f6ecdd',shadowBlur:10,shadowColor:c}}}]};}"), data=[])
+    releases.options['series'][0].update({'encode': {'x': 0, 'y': 1}, 'clip': False})
+    gaps.options['series'].extend(releases.options['series'])
+    gaps.options['minimumWidth'] = 480
+    gaps.options['xAxis'] = [axis(min='dataMin', max='dataMax', minInterval=1, position='top',
+        axisLabel={**text, 'hideOverlap': True, 'showMaxLabel': False, 'formatter': JsCode('function(v){return String(v);}')})]
+    gaps.options['graphic'] = [{'type': 'text', 'left': 72, 'top': 16, 'silent': True,
+        'style': {'text': '上映年份', 'fontSize': 14, 'fontFamily': 'Microsoft YaHei', 'fill': '#c6b8a6'}}]
     gaps.options['yAxis'] = [axis(kind='category', data=[], inverse=True, axisLabel=text)]
-    gaps.options['series'][0]['encode'] = {'x': [0, 1], 'y': 2}
+    gaps.options['series'][0].update({'encode': {'x': [0, 1], 'y': 2}, 'clip': False})
 
     credits = Graph()
     credits.add('联合署名', [], [], layout='none', is_roam=True, is_draggable=True,
@@ -617,26 +641,26 @@ def build_templates():
                      'color': '#ffffff20'}} if index >= len(palette) else {})}
         for index, name in enumerate(genres)}
 
-    history = Line()
+    history = Bar()
     history.add_xaxis([])
     for role in range(3):
         for index, name in enumerate(genres):
-            history.add_yaxis(name, [], color=palette[index % len(palette)], is_step='middle',
-                is_symbol_show=False, stack=f'导演{role}', label_opts=opts.LabelOpts(is_show=False),
-                linestyle_opts=opts.LineStyleOpts(width=1, type_='solid' if index < len(palette) else 'dashed'),
-                areastyle_opts=opts.AreaStyleOpts(opacity=.8))
+            history.add_yaxis(name, [], color=palette[index % len(palette)],
+                stack=f'导演{role}', category_gap='24%', label_opts=opts.LabelOpts(is_show=False))
             history.options['series'][-1].update({'xAxisIndex': role, 'yAxisIndex': role,
-                'emphasis': {'focus': 'series'}})
+                'barMaxWidth': 54, 'emphasis': {'focus': 'series'},
+                'itemStyle': {**blocks.options['genreStyles'][name], 'opacity': .9, 'borderColor': '#171214', 'borderWidth': .5}})
     history.options['genreOrder'] = genres
     history.options['facetHeight'] = 276
-    history.options['xAxis'] = [axis(kind='category', data=[], gridIndex=role, boundaryGap=False,
-        axisLabel={**text, 'hideOverlap': True}, show=role == 0) for role in range(3)]
+    history.options['minimumWidth'] = 640
+    history.options['xAxis'] = [axis(kind='category', data=[], gridIndex=role, boundaryGap=True,
+        axisLabel={**text, 'hideOverlap': True, 'showMaxLabel': False}, show=role == 0) for role in range(3)]
     history.options['yAxis'] = [axis(min=0, max=100, interval=50, gridIndex=role, name='',
         nameTextStyle={**text, 'color': COLORS[role]}, axisLabel={**text, 'formatter': '{value}%'}, show=role == 0)
         for role in range(3)]
     history.options['grid'] = [{'left': 46, 'right': 18, 'top': 34 + role * 276, 'height': 204} for role in range(3)]
     history.options['legend'] = {'show': True, 'type': 'scroll', 'bottom': 4, 'left': 30, 'right': 20,
-        'selectedMode': False, 'textStyle': text, 'pageTextStyle': text, 'pageIconColor': '#d7ab82',
+        'selectedMode': False, 'icon': 'rect', 'textStyle': text, 'pageTextStyle': text, 'pageIconColor': '#d7ab82',
         'pageIconInactiveColor': '#5a4349', 'itemWidth': 12, 'itemHeight': 9}
     history.options.update({'backgroundColor': 'transparent', 'animationDuration': 350,
         'tooltip': {'show': True, 'trigger': 'item', 'confine': True, 'backgroundColor': '#171214',
@@ -654,24 +678,23 @@ def build_templates():
         "(d.mean===null?'暂无评分':d.mean.toFixed(2)+' / 5')+'<br/>'+d.count.toLocaleString()+' 条评分';}")
     return {
         'ratingsBox': finish(box, (74, 24, 28, 62),
-            mobile={'grid': {'left': 50, 'right': 16}, 'xAxis': [{'interval': 1, 'axisLabel': {'fontSize': 12}}],
+            mobile={'grid': {'left': 50, 'right': 16}, 'xAxis': [{'axisLabel': {'fontSize': 12, 'hideOverlap': True,
+                'formatter': JsCode("function(v){return v===.5||Number.isInteger(v)?String(v):'';}")}}],
                     'yAxis': [{'axisLabel': {'fontSize': 12}}]}, max_width=480, tooltip={'formatter': JsCode(
             "function(p){var d=p.data;if(d.statistic)return echarts.format.encodeHTML(d.name)+'<br/>中位数 '+d.value[2].toFixed(2)+"
             "' · 中间 50% '+d.value[1].toFixed(2)+'–'+d.value[3].toFixed(2)+'<br/>'+d.sample+' 部作品';"
             "return echarts.format.encodeHTML(d.name)+'<br/>'+d.mean.toFixed(2)+' / 5 · '+d.year;}")}),
         'ratingsThreshold': finish(threshold, (50, 24, 34, 62),
-            mobile={'xAxis': [{'interval': 1, 'axisLabel': {'fontSize': 12}}]}, max_width=480, tooltip={'formatter': JsCode(
+            mobile={'xAxis': [{'axisLabel': {'fontSize': 12, 'hideOverlap': True,
+                'formatter': JsCode("function(v){return v===.5||Number.isInteger(v)?String(v):'';}")}}]}, max_width=480, tooltip={'formatter': JsCode(
             "function(p){var d=p.data;return echarts.format.encodeHTML(p.seriesName)+'<br/>≥ '+d.value[0].toFixed(3)+"
             "' 分 · '+d.count+' / '+d.total+' 部<br/>'+d.value[1].toFixed(1)+'%';}")}),
         'careerPosters': finish(posters, (76, 28, 48, 44),
             mobile={'grid': {'left': 50, 'right': 30}}, max_width=480, tooltip={'formatter': film_tooltip}),
-        'careerGaps': finish(gaps, (160, 28, 42, 40),
-            mobile={'grid': {'left': 74, 'right': 18}, 'xAxis': [{'axisLabel': {'fontSize': 12}}],
-                    'yAxis': [{'axisLabel': {'fontSize': 12, 'formatter': JsCode("function(v){return v.split(' · ')[1].replace(/→\\d{2}/,'→');}")}}]},
-            max_width=480, tooltip={'formatter': JsCode(
-            "function(p){var d=p.data;return echarts.format.encodeHTML(d.director)+'<br/>'+"
-            "echarts.format.encodeHTML(d.before)+' ('+d.value[0]+')<br/>→ '+echarts.format.encodeHTML(d.after)+"
-            "' ('+d.value[1]+')<br/>上映年相差 '+d.value[4]+' 年';}")}),
+        'careerGaps': finish(gaps, (72, 28, 70, 34), tooltip={'formatter': JsCode(
+            "function(p){var d=p.data,title=echarts.format.encodeHTML(d.director)+'<br/>';"
+            "if(d.films)return title+d.value[0]+' 年 · '+d.films.length+' 部<br/>'+d.films.map(echarts.format.encodeHTML).join('<br/>');"
+            "return title+d.value[0]+' 年 · '+d.before+' 部<br/>→ '+d.value[1]+' 年 · '+d.after+' 部<br/>上映年相差 '+d.value[3]+' 年';}")}),
         'creditsNetwork': finish(credits, (16, 16, 20, 20), tooltip={'formatter': JsCode(
             "function(p){var d=p.data;return echarts.format.encodeHTML(d.name)+(d.movieIds?'<br/>'+d.movieIds.length+' 部联合执导影片':'');}")}),
         'creditsChord': finish(chord, (0, 0, 0, 0), tooltip={'formatter': JsCode(
@@ -680,7 +703,7 @@ def build_templates():
             "function(p){var d=p.data;return echarts.format.encodeHTML(d.director||d.name)+(d.genre?"
             "'<br/>'+echarts.format.encodeHTML(d.genre)+' · '+d.value.toFixed(1)+'%<br/>'+d.movieIds.length+' 部影片':'');}")}),
         'genresHistory': history.dump_options(),
-        'filmRatings': build_score_distribution(True),
+        'filmRatings': build_film_ratings(),
     }
 
 

@@ -157,7 +157,23 @@
       const id = event.data?.id;
       if (/^nm\d+$/.test(id)) openSearch({type: 'director', id});
     });
+    if (key === 'C4') {
+      chart.on('mouseover', event => {
+        if (event.seriesIndex !== 1 && event.seriesIndex !== 2) return;
+        chart.dispatchAction({type: 'downplay', seriesIndex: [1, 2], highlightKey: 'discovery'});
+        const pointIndex = event.seriesIndex === 1 ? event.dataIndex : event.data.pointIndex;
+        chart.dispatchAction({type: 'highlight', seriesIndex: 1, dataIndex: pointIndex, highlightKey: 'discovery'});
+        const people = window.DIRECTOR_CHARTS.C4.series[1].data[pointIndex].members;
+        chart.dispatchAction({type: 'highlight', seriesIndex: 2, dataIndex: people.map(person => person.cardIndex), highlightKey: 'discovery'});
+      });
+      chart.on('mouseout', () => chart.dispatchAction({type: 'downplay', seriesIndex: [1, 2], highlightKey: 'discovery'}));
+    }
     charts.set(key, chart);
+    if (key === 'R3') {
+      byId('score-focus').innerHTML += window.DIRECTOR_CHARTS.R3.series.map((series, index) =>
+        '<option value="' + index + '">' + escapeHtml(series.name) + '</option>').join('');
+      byId('score-focus').disabled = false;
+    }
     chartResizeObserver.observe(element);
     if (key === 'C6') loadData().then(() => {
       byId('chronicle-step').innerHTML = window.DIRECTOR_CHARTS.C6.periodSteps.map(step =>
@@ -305,11 +321,14 @@
     const director = data.directorsById.get(id);
     const partners = data.partners[director.index].slice().sort((a, b) => b.count - a.count || a.director.name.localeCompare(b.director.name));
     const positions = window.DIRECTOR_CHARTS.C5.layoutPositions;
+    const strength = window.DIRECTOR_CHARTS.C5.strengthEncoding;
     const nodes = [{...positions[0], id, name: director.name, category: 0, value: partners.length},
       ...partners.map((partner, index) => ({...positions[1 + Math.floor(index * (positions.length - 1) / partners.length)],
-        id: partner.director.id, name: partner.director.name, category: 1, value: partner.count}))];
+        id: partner.director.id, name: partner.director.name, category: 1, value: partner.count,
+        symbolSize: strength(partner.count).symbolSize}))];
     const links = partners.map(partner => ({source: id, target: partner.director.id, value: partner.count,
-      name: `${director.name} × ${partner.director.name}`, ratings: data.collaborations[partner.pairIndex][3], pairIndex: partner.pairIndex}));
+      name: `${director.name} × ${partner.director.name}`, ratings: data.collaborations[partner.pairIndex][3], pairIndex: partner.pairIndex,
+      lineStyle: strength(partner.count).lineStyle}));
     const base = window.DIRECTOR_CHARTS.C5.series[0];
     charts.get('C5').setOption({series: [{data: nodes, links, center: base.center, zoom: base.zoom}]});
     byId('collab-focus').textContent = `${director.name}的全部搭档`;
@@ -459,7 +478,7 @@
         <p class="profile-meta">${escapeHtml([years, profession].filter(Boolean).join(' · '))}</p></div></div>
         <div class="profile-stats"><div><strong>${number(item.workCount)}</strong><span>部作品</span></div>
         <div><strong>${number(item.ratingCount)}</strong><span>评分记录</span></div>
-        <div><strong>${score(item.mean)}</strong><span>加权均分</span></div></div>
+        <div><strong>${score(item.mean)}</strong><span title="汇总该导演库内作品的全部评分记录求均分">观众均分</span></div></div>
         <p class="profile-meta profile-summary">影片均分中位 ${score(median(current.films))} · ${item.firstYear || '—'}–${item.lastYear || '—'}</p>
         `;
       byId('director-films').innerHTML = current.films.map(filmCard).join('');
@@ -634,7 +653,7 @@
     const rows = [
       ['库内作品', director => director.workCount, number],
       ['评分记录', director => director.ratingCount, number],
-      ['加权均分', director => director.mean, score],
+      ['观众均分', director => director.mean, score],
       ['影片均分中位', director => median(directorFilms(director)), score],
       ['首末跨度', director => director.lastYear && director.firstYear ? director.lastYear - director.firstYear + 1 : null, value => `${number(value)} 年`]
     ];
@@ -726,15 +745,23 @@
       }
       const plots = Array.from({length: 3}, (_, role) => {
         const group = groups[role];
-        if (!group || !group.rated.length) return {name: group?.director.name || '', data: []};
+        if (!group || !group.rated.length) return {name: group?.director.name || '', data: [], markPoint: {data: []}};
         const values = [...new Set([.5, ...group.rated.map(film => film.mean), ratingThreshold, 5])].sort((a, b) => a - b);
-        return {name: group.director.name, data: values.map(value => {
+        const points = values.map(value => {
           const films = group.rated.filter(film => film.mean >= value);
           return {name: group.director.name, value: [value, group.rated.length ? films.length / group.rated.length * 100 : 0],
             count: films.length, total: group.rated.length, movieIds: films.map(film => film.id)};
-        }), ...(role === 0 ? {markLine: {data: [{xAxis: ratingThreshold}]}} : {})};
+        });
+        const current = points.find(point => point.value[0] === ratingThreshold);
+        return {name: group.director.name, data: points, markPoint: {data: [{...current, coord: current.value}]},
+          ...(role === 0 ? {markLine: {data: [{xAxis: ratingThreshold}]}} : {})};
       });
-      return {template: 'ratingsThreshold', metric, empty: count ? '' : '暂无作品评分', height: 350, update: {series: plots}};
+      const thresholdMetric = groups.map(group => {
+        const reached = group.rated.filter(film => film.mean >= ratingThreshold).length;
+        return group.role + ' ≥ ' + ratingThreshold.toFixed(2) + '：' + reached + ' / ' + group.rated.length + ' 部 · ' +
+          (group.rated.length ? (reached / group.rated.length * 100).toFixed(1) : '0.0') + '%';
+      }).join('\n');
+      return {template: 'ratingsThreshold', metric: thresholdMetric, empty: count ? '' : '暂无作品评分', height: 350, update: {series: plots}};
     }
 
     if (type === 'career') {
@@ -749,19 +776,28 @@
             xAxis: [{min: prepared.first, max: prepared.last}], yAxis: [{max: prepared.height}],
             series: [{data: prepared.nodes}, {data: prepared.labels}]}};
       }
-      const rows = [], labels = [];
+      const intervals = [], releases = [];
       groups.forEach((group, role) => {
         const films = group.films.filter(film => film.year != null).sort((a, b) => a.year - b.year || b.ratingCount - a.ratingCount);
-        films.slice(1).forEach((film, index) => {
-          const previous = films[index], row = rows.length;
-          labels.push(group.role + ' · ' + previous.year + '→' + film.year);
-          rows.push({name: previous.title + ' → ' + film.title, director: group.director.name,
-            before: previous.title, after: film.title, movieIds: [previous.id, film.id],
-            value: [previous.year, film.year, row, role, film.year - previous.year]});
+        const years = [...new Set(films.map(film => film.year))];
+        const longest = Math.max(0, ...years.slice(1).map((year, index) => year - years[index]));
+        years.forEach(year => {
+          const released = films.filter(film => film.year === year);
+          releases.push({name: year + ' 年', director: group.director.name, films: released.map(film => film.title),
+            movieIds: released.map(film => film.id), value: [year, role, released.length]});
+        });
+        years.slice(1).forEach((year, index) => {
+          const before = films.filter(film => film.year === years[index]), after = films.filter(film => film.year === year);
+          intervals.push({name: years[index] + ' → ' + year, director: group.director.name,
+            before: before.length, after: after.length, movieIds: [...before, ...after].map(film => film.id),
+            value: [years[index], year, role, year - years[index], year - years[index] === longest ? 1 : 0]});
         });
       });
-      return {template: 'careerGaps', metric: rows.length + ' 段上映年间隔', empty: rows.length ? '' : '至少两部已知年份作品才有间隔',
-        height: Math.max(290, rows.length * 34 + 100), update: {yAxis: [{data: labels}], series: [{data: rows}]}};
+      const years = releases.map(release => release.value[0]);
+      return {template: 'careerGaps', metric: groups.map(group => group.role + ' · ' + group.films.filter(film => film.year != null).length + ' 部').join('　'),
+        empty: releases.length ? '' : '暂无上映年份', height: 180 + groups.length * 108,
+        update: {xAxis: [{min: Math.min(...years) - 1, max: Math.max(...years) + 1}],
+          yAxis: [{data: groups.map(group => group.role)}], series: [{data: intervals}, {data: releases}]}};
     }
 
     if (type === 'partners') {
@@ -832,7 +868,7 @@
       const bins = periods.map(year => group ? group.films.filter(film => film.year >= year && film.year < year + genrePeriod) : []);
       order.forEach(genre => plots.push({data: group ? bins.map((films, index) => {
         const tagged = films.filter(film => film.genres.includes(genre)), total = films.reduce((sum, film) => sum + film.genres.length, 0);
-        return {name: genre, genre, director: group.director.name, period: periods[index] + '–' + (periods[index] + genrePeriod - 1),
+        return {name: genre, genre, director: group.director.name, period: genrePeriod === 1 ? String(periods[index]) : periods[index] + '–' + (periods[index] + genrePeriod - 1),
           value: [index, total ? tagged.length / total * 100 : null], movieIds: tagged.map(film => film.id)};
       }) : []}));
     }
@@ -988,6 +1024,11 @@
     refreshComparison();
   });
   byId('clear-compare').addEventListener('click', () => { targetIds.length = 0; refreshComparison(); });
+  byId('score-focus').addEventListener('change', event => {
+    const base = window.DIRECTOR_CHARTS.R3, selected = event.target.value;
+    charts.get('R3').setOption({series: base.series.map((series, index) => ({lineStyle: selected === '' ? series.lineStyle :
+      {...series.lineStyle, ...base.focusStyles[index === Number(selected) ? 'active' : 'background']}}))});
+  });
   document.addEventListener('click', event => {
     const scopeButton = event.target.closest('[data-insight-scope]');
     if (scopeButton && !scopeButton.disabled) { insightScope = scopeButton.dataset.insightScope; renderInsights(); }

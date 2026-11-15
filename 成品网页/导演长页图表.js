@@ -1223,12 +1223,12 @@ window.DIRECTOR_CHARTS = {
             "type": "value",
             "nameTextStyle": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLabel": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLine": {
@@ -1252,12 +1252,12 @@ window.DIRECTOR_CHARTS = {
             "type": "value",
             "nameTextStyle": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLabel": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLine": {
@@ -1278,7 +1278,7 @@ window.DIRECTOR_CHARTS = {
     ],
     "textStyle": {
         "fontSize": 16,
-        "color": "#d7ab82",
+        "color": "#c6b8a6",
         "fontFamily": "Microsoft YaHei"
     },
     "grid": {
@@ -2045,12 +2045,12 @@ window.DIRECTOR_CHARTS = {
             "type": "value",
             "nameTextStyle": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLabel": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLine": {
@@ -2074,12 +2074,12 @@ window.DIRECTOR_CHARTS = {
             "type": "value",
             "nameTextStyle": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLabel": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLine": {
@@ -2100,7 +2100,7 @@ window.DIRECTOR_CHARTS = {
     ],
     "textStyle": {
         "fontSize": 16,
-        "color": "#d7ab82",
+        "color": "#c6b8a6",
         "fontFamily": "Microsoft YaHei"
     },
     "grid": {
@@ -2209,7 +2209,7 @@ window.DIRECTOR_CHARTS = {
         "backgroundColor": "#1d1819",
         "textStyle": {
             "fontSize": 16,
-            "color": "#d7ab82",
+            "color": "#c6b8a6",
             "fontFamily": "Microsoft YaHei"
         },
         "formatter": function(p){var v=p.value;return p.name+' \u00b7 '+Number(v[5]).toLocaleString()+' \u4f4d\u5bfc\u6f14<br/>'+'\u4e2d\u4f4d\u6570 '+Number(v[1]).toFixed(3)+'<br/>\u4e2d\u95f4 50%\uff1a'+Number(v[2]).toFixed(3)+'\u2013'+Number(v[3]).toFixed(3);}
@@ -2217,15 +2217,15 @@ window.DIRECTOR_CHARTS = {
     "xAxis": [
         {
             "type": "value",
-            "name": "\u5bfc\u6f14\u52a0\u6743\u5747\u5206",
+            "name": "\u5bfc\u6f14\u89c2\u4f17\u5747\u5206",
             "nameTextStyle": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLabel": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLine": {
@@ -2253,7 +2253,7 @@ window.DIRECTOR_CHARTS = {
             "type": "category",
             "nameTextStyle": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLabel": {
@@ -2283,7 +2283,7 @@ window.DIRECTOR_CHARTS = {
     ],
     "textStyle": {
         "fontSize": 16,
-        "color": "#d7ab82",
+        "color": "#c6b8a6",
         "fontFamily": "Microsoft YaHei"
     },
     "grid": {
@@ -2340,7 +2340,7 @@ window.DIRECTOR_CHARTS = {
     "series": [
         {
             "type": "scatter",
-            "name": "\u5168\u90e8\u5bfc\u6f14",
+            "name": "\u6bd4\u8f83\u6837\u672c",
             "symbolSize": 5,
             "data": [
                 {
@@ -6994,7 +6994,8 @@ window.DIRECTOR_CHARTS = {
                             "id": "nm0526199",
                             "score": 4.183,
                             "votes": 27260,
-                            "works": 3
+                            "works": 3,
+                            "cardIndex": 0
                         }
                     ]
                 },
@@ -7011,7 +7012,8 @@ window.DIRECTOR_CHARTS = {
                             "id": "nm0000905",
                             "score": 4.135,
                             "votes": 33657,
-                            "works": 8
+                            "works": 8,
+                            "cardIndex": 1
                         }
                     ]
                 },
@@ -7028,14 +7030,16 @@ window.DIRECTOR_CHARTS = {
                             "id": "nm0619923",
                             "score": 4.122,
                             "votes": 20350,
-                            "works": 7
+                            "works": 7,
+                            "cardIndex": 2
                         },
                         {
                             "name": "\u00c9ric Toledano",
                             "id": "nm0865918",
                             "score": 4.122,
                             "votes": 20350,
-                            "works": 7
+                            "works": 7,
+                            "cardIndex": 3
                         }
                     ]
                 },
@@ -7052,7 +7056,8 @@ window.DIRECTOR_CHARTS = {
                             "id": "nm0576987",
                             "score": 4.063,
                             "votes": 34984,
-                            "works": 7
+                            "works": 7,
+                            "cardIndex": 4
                         }
                     ]
                 },
@@ -7069,7 +7074,8 @@ window.DIRECTOR_CHARTS = {
                             "id": "nm0612322",
                             "score": 4.05,
                             "votes": 22538,
-                            "works": 20
+                            "works": 20,
+                            "cardIndex": 5
                         }
                     ]
                 },
@@ -7086,7 +7092,8 @@ window.DIRECTOR_CHARTS = {
                             "id": "nm3227090",
                             "score": 4.036,
                             "votes": 33450,
-                            "works": 6
+                            "works": 6,
+                            "cardIndex": 6
                         }
                     ]
                 },
@@ -7103,7 +7110,8 @@ window.DIRECTOR_CHARTS = {
                             "id": "nm0000080",
                             "score": 4.035,
                             "votes": 34467,
-                            "works": 25
+                            "works": 25,
+                            "cardIndex": 7
                         }
                     ]
                 }
@@ -7185,6 +7193,13 @@ window.DIRECTOR_CHARTS = {
                 "color": "#d7ab82",
                 "borderColor": "#f6ecdd",
                 "borderWidth": 1
+            },
+            "emphasis": {
+                "itemStyle": {
+                    "color": "#f6ecdd",
+                    "shadowBlur": 16,
+                    "shadowColor": "#d7ab8266"
+                }
             }
         },
         {
@@ -7215,7 +7230,8 @@ window.DIRECTOR_CHARTS = {
                     "name": "\u5361\u8482\u4e9a\u00b7\u4f26\u5fb7",
                     "score": 4.183,
                     "votes": 27260,
-                    "works": 3
+                    "works": 3,
+                    "pointIndex": 0
                 },
                 {
                     "value": [
@@ -7229,7 +7245,8 @@ window.DIRECTOR_CHARTS = {
                     "name": "\u7f57\u4f2f\u6258\u00b7\u8d1d\u5c3c\u5c3c",
                     "score": 4.135,
                     "votes": 33657,
-                    "works": 8
+                    "works": 8,
+                    "pointIndex": 1
                 },
                 {
                     "value": [
@@ -7243,7 +7260,8 @@ window.DIRECTOR_CHARTS = {
                     "name": "Olivier Nakache",
                     "score": 4.122,
                     "votes": 20350,
-                    "works": 7
+                    "works": 7,
+                    "pointIndex": 2
                 },
                 {
                     "value": [
@@ -7257,7 +7275,8 @@ window.DIRECTOR_CHARTS = {
                     "name": "\u00c9ric Toledano",
                     "score": 4.122,
                     "votes": 20350,
-                    "works": 7
+                    "works": 7,
+                    "pointIndex": 2
                 },
                 {
                     "value": [
@@ -7271,7 +7290,8 @@ window.DIRECTOR_CHARTS = {
                     "name": "\u8d39\u5c14\u5357\u591a\u00b7\u6885\u91cc\u5c14\u65af",
                     "score": 4.063,
                     "votes": 34984,
-                    "works": 7
+                    "works": 7,
+                    "pointIndex": 3
                 },
                 {
                     "value": [
@@ -7285,7 +7305,8 @@ window.DIRECTOR_CHARTS = {
                     "name": "\u7f57\u4f2f\u7279\u00b7\u9a6c\u5229\u6839",
                     "score": 4.05,
                     "votes": 22538,
-                    "works": 20
+                    "works": 20,
+                    "pointIndex": 4
                 },
                 {
                     "value": [
@@ -7299,7 +7320,8 @@ window.DIRECTOR_CHARTS = {
                     "name": "\u8fbe\u7c73\u6069\u00b7\u67e5\u6cfd\u96f7",
                     "score": 4.036,
                     "votes": 33450,
-                    "works": 6
+                    "works": 6,
+                    "pointIndex": 5
                 },
                 {
                     "value": [
@@ -7313,7 +7335,8 @@ window.DIRECTOR_CHARTS = {
                     "name": "\u5965\u900a\u00b7\u5a01\u5c14\u65af",
                     "score": 4.035,
                     "votes": 34467,
-                    "works": 25
+                    "works": 25,
+                    "pointIndex": 6
                 }
             ],
             "clip": true,
@@ -7332,10 +7355,10 @@ window.DIRECTOR_CHARTS = {
         "backgroundColor": "#1d1819",
         "textStyle": {
             "fontSize": 16,
-            "color": "#d7ab82",
+            "color": "#c6b8a6",
             "fontFamily": "Microsoft YaHei"
         },
-        "formatter": function(p){var d=p.data,people=d.members||[d];return (people.length>1?people.length+' \u4f4d\u5bfc\u6f14\u91cd\u5408<br/><br/>':'')+people.map(function(person){return echarts.format.encodeHTML(person.name)+'<br/>\u52a0\u6743\u5747\u5206 '+person.score.toFixed(3)+' / 5<br/>'+person.votes.toLocaleString()+' \u6761\u8bc4\u5206 \u00b7 '+person.works+' \u90e8\u4f5c\u54c1';}).join('<br/><br/>');}
+        "formatter": function(p){var d=p.data,people=d.members||[d];return (people.length>1?people.length+' \u4f4d\u5bfc\u6f14\u91cd\u5408<br/><br/>':'')+people.map(function(person){return echarts.format.encodeHTML(person.name)+'<br/>\u89c2\u4f17\u5747\u5206 '+person.score.toFixed(3)+' / 5<br/>'+person.votes.toLocaleString()+' \u6761\u8bc4\u5206 \u00b7 '+person.works+' \u90e8\u4f5c\u54c1';}).join('<br/><br/>');}
     },
     "xAxis": [
         {
@@ -7343,12 +7366,12 @@ window.DIRECTOR_CHARTS = {
             "name": "\u8bc4\u5206\u8bb0\u5f55\uff08\u5bf9\u6570\uff09",
             "nameTextStyle": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLabel": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei",
                 "formatter": function(v){return v/10000+'\u4e07';}
             },
@@ -7374,15 +7397,15 @@ window.DIRECTOR_CHARTS = {
     "yAxis": [
         {
             "type": "value",
-            "name": "\u52a0\u6743\u5747\u5206 / 5",
+            "name": "\u89c2\u4f17\u5747\u5206 / 5",
             "nameTextStyle": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLabel": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLine": {
@@ -7431,7 +7454,7 @@ window.DIRECTOR_CHARTS = {
     ],
     "textStyle": {
         "fontSize": 16,
-        "color": "#d7ab82",
+        "color": "#c6b8a6",
         "fontFamily": "Microsoft YaHei"
     },
     "grid": {
@@ -7578,6 +7601,7 @@ window.DIRECTOR_CHARTS = {
         "#d87c7c",
         "#919e8b"
     ],
+    "strengthEncoding": function(count){return {symbolSize:Math.min(32,12+Math.sqrt(count)*3),lineStyle:{width:Math.min(6,1+Math.sqrt(count)),opacity:count>1?.75:.25}};},
     "media": [
         {
             "query": {
@@ -8849,7 +8873,7 @@ window.DIRECTOR_CHARTS = {
     ],
     "textStyle": {
         "fontSize": 16,
-        "color": "#d7ab82",
+        "color": "#c6b8a6",
         "fontFamily": "Microsoft YaHei"
     },
     "grid": {
@@ -9209,12 +9233,12 @@ window.DIRECTOR_CHARTS = {
             "type": "category",
             "nameTextStyle": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLabel": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei",
                 "interval": "auto",
                 "hideOverlap": true
@@ -9252,7 +9276,7 @@ window.DIRECTOR_CHARTS = {
             "type": "category",
             "nameTextStyle": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLabel": {
@@ -9302,7 +9326,7 @@ window.DIRECTOR_CHARTS = {
         "itemGap": 20,
         "textStyle": {
             "fontSize": 16,
-            "color": "#d7ab82",
+            "color": "#c6b8a6",
             "fontFamily": "Microsoft YaHei"
         },
         "pieces": [
@@ -9340,7 +9364,7 @@ window.DIRECTOR_CHARTS = {
     "rowHeight": 96,
     "textStyle": {
         "fontSize": 16,
-        "color": "#d7ab82",
+        "color": "#c6b8a6",
         "fontFamily": "Microsoft YaHei"
     },
     "grid": {
@@ -11424,12 +11448,12 @@ window.DIRECTOR_CHARTS = {
             "type": "category",
             "nameTextStyle": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLabel": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei",
                 "interval": 0,
                 "margin": 20
@@ -11469,12 +11493,12 @@ window.DIRECTOR_CHARTS = {
             "type": "category",
             "nameTextStyle": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLabel": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei",
                 "margin": 24
             },
@@ -11610,7 +11634,7 @@ window.DIRECTOR_CHARTS = {
     ],
     "textStyle": {
         "fontSize": 16,
-        "color": "#d7ab82",
+        "color": "#c6b8a6",
         "fontFamily": "Microsoft YaHei"
     },
     "grid": {
@@ -11801,7 +11825,7 @@ window.DIRECTOR_CHARTS = {
         "backgroundColor": "#1d1819",
         "textStyle": {
             "fontSize": 16,
-            "color": "#d7ab82",
+            "color": "#c6b8a6",
             "fontFamily": "Microsoft YaHei"
         },
         "formatter": function(p){return echarts.format.encodeHTML(p.data.name)+'<br/>'+p.data.display;}
@@ -11811,12 +11835,12 @@ window.DIRECTOR_CHARTS = {
             "type": "value",
             "nameTextStyle": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLabel": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLine": {
@@ -11842,7 +11866,7 @@ window.DIRECTOR_CHARTS = {
             "type": "category",
             "nameTextStyle": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLabel": {
@@ -11878,7 +11902,7 @@ window.DIRECTOR_CHARTS = {
     ],
     "textStyle": {
         "fontSize": 16,
-        "color": "#d7ab82",
+        "color": "#c6b8a6",
         "fontFamily": "Microsoft YaHei"
     },
     "grid": {
@@ -12089,7 +12113,7 @@ window.DIRECTOR_CHARTS = {
         "backgroundColor": "#1d1819",
         "textStyle": {
             "fontSize": 16,
-            "color": "#d7ab82",
+            "color": "#c6b8a6",
             "fontFamily": "Microsoft YaHei"
         },
         "formatter": function(p){return echarts.format.encodeHTML(p.data.name)+'<br/>'+p.data.display+'<br/>'+p.data.detail;}
@@ -12099,12 +12123,12 @@ window.DIRECTOR_CHARTS = {
             "type": "value",
             "nameTextStyle": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLabel": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLine": {
@@ -12130,7 +12154,7 @@ window.DIRECTOR_CHARTS = {
             "type": "category",
             "nameTextStyle": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei"
             },
             "axisLabel": {
@@ -12166,7 +12190,7 @@ window.DIRECTOR_CHARTS = {
     ],
     "textStyle": {
         "fontSize": 16,
-        "color": "#d7ab82",
+        "color": "#c6b8a6",
         "fontFamily": "Microsoft YaHei"
     },
     "grid": {
@@ -12183,7 +12207,7 @@ window.DIRECTOR_CHARTS = {
     "animationDuration": 900,
     "animationEasing": "cubicOut",
     "animationDelay": 0,
-    "animationDurationUpdate": 300,
+    "animationDurationUpdate": 250,
     "animationEasingUpdate": "cubicOut",
     "animationDelayUpdate": 0,
     "aria": {
@@ -12200,8 +12224,8 @@ window.DIRECTOR_CHARTS = {
             "z": 2,
             "lineStyle": {
                 "show": false,
-                "width": 3,
-                "opacity": 0.9,
+                "width": 2,
+                "opacity": 0.75,
                 "color": "#d87c7c"
             },
             "name": "\u5f17\u5170\u514b\u00b7\u5fb7\u62c9\u90a6\u7279",
@@ -12223,8 +12247,12 @@ window.DIRECTOR_CHARTS = {
                 "focus": "series",
                 "lineStyle": {
                     "width": 4,
-                    "opacity": 1,
-                    "color": "#f6ecdd"
+                    "opacity": 1
+                }
+            },
+            "blur": {
+                "lineStyle": {
+                    "opacity": 0.08
                 }
             }
         },
@@ -12239,7 +12267,7 @@ window.DIRECTOR_CHARTS = {
             "lineStyle": {
                 "show": false,
                 "width": 2,
-                "opacity": 0.9,
+                "opacity": 0.75,
                 "color": "#919e8b"
             },
             "name": "\u5bab\u5d0e\u9a8f",
@@ -12261,8 +12289,12 @@ window.DIRECTOR_CHARTS = {
                 "focus": "series",
                 "lineStyle": {
                     "width": 4,
-                    "opacity": 1,
-                    "color": "#f6ecdd"
+                    "opacity": 1
+                }
+            },
+            "blur": {
+                "lineStyle": {
+                    "opacity": 0.08
                 }
             }
         },
@@ -12277,7 +12309,7 @@ window.DIRECTOR_CHARTS = {
             "lineStyle": {
                 "show": false,
                 "width": 2,
-                "opacity": 0.9,
+                "opacity": 0.75,
                 "color": "#d7ab82"
             },
             "name": "\u9ed1\u6cfd\u660e",
@@ -12299,8 +12331,12 @@ window.DIRECTOR_CHARTS = {
                 "focus": "series",
                 "lineStyle": {
                     "width": 4,
-                    "opacity": 1,
-                    "color": "#f6ecdd"
+                    "opacity": 1
+                }
+            },
+            "blur": {
+                "lineStyle": {
+                    "opacity": 0.08
                 }
             }
         },
@@ -12315,7 +12351,7 @@ window.DIRECTOR_CHARTS = {
             "lineStyle": {
                 "show": false,
                 "width": 2,
-                "opacity": 0.9,
+                "opacity": 0.75,
                 "color": "#6e7074"
             },
             "name": "\u514b\u91cc\u65af\u6258\u5f17\u00b7\u8bfa\u5170",
@@ -12337,8 +12373,12 @@ window.DIRECTOR_CHARTS = {
                 "focus": "series",
                 "lineStyle": {
                     "width": 4,
-                    "opacity": 1,
-                    "color": "#f6ecdd"
+                    "opacity": 1
+                }
+            },
+            "blur": {
+                "lineStyle": {
+                    "opacity": 0.08
                 }
             }
         },
@@ -12353,7 +12393,7 @@ window.DIRECTOR_CHARTS = {
             "lineStyle": {
                 "show": false,
                 "width": 2,
-                "opacity": 0.9,
+                "opacity": 0.75,
                 "color": "#61a0a8"
             },
             "name": "\u8d5b\u5c14\u4e54\u00b7\u83b1\u6602\u5185",
@@ -12375,8 +12415,12 @@ window.DIRECTOR_CHARTS = {
                 "focus": "series",
                 "lineStyle": {
                     "width": 4,
-                    "opacity": 1,
-                    "color": "#f6ecdd"
+                    "opacity": 1
+                }
+            },
+            "blur": {
+                "lineStyle": {
+                    "opacity": 0.08
                 }
             }
         },
@@ -12391,7 +12435,7 @@ window.DIRECTOR_CHARTS = {
             "lineStyle": {
                 "show": false,
                 "width": 2,
-                "opacity": 0.9,
+                "opacity": 0.75,
                 "color": "#efa18d"
             },
             "name": "\u5f17\u6717\u897f\u65af\u00b7\u798f\u7279\u00b7\u79d1\u6ce2\u62c9",
@@ -12413,8 +12457,12 @@ window.DIRECTOR_CHARTS = {
                 "focus": "series",
                 "lineStyle": {
                     "width": 4,
-                    "opacity": 1,
-                    "color": "#f6ecdd"
+                    "opacity": 1
+                }
+            },
+            "blur": {
+                "lineStyle": {
+                    "opacity": 0.08
                 }
             }
         },
@@ -12429,7 +12477,7 @@ window.DIRECTOR_CHARTS = {
             "lineStyle": {
                 "show": false,
                 "width": 2,
-                "opacity": 0.9,
+                "opacity": 0.75,
                 "color": "#787464"
             },
             "name": "\u7279\u745e\u00b7\u743c\u65af",
@@ -12451,8 +12499,12 @@ window.DIRECTOR_CHARTS = {
                 "focus": "series",
                 "lineStyle": {
                     "width": 4,
-                    "opacity": 1,
-                    "color": "#f6ecdd"
+                    "opacity": 1
+                }
+            },
+            "blur": {
+                "lineStyle": {
+                    "opacity": 0.08
                 }
             }
         },
@@ -12467,7 +12519,7 @@ window.DIRECTOR_CHARTS = {
             "lineStyle": {
                 "show": false,
                 "width": 2,
-                "opacity": 0.9,
+                "opacity": 0.75,
                 "color": "#cc7e63"
             },
             "name": "\u4e54\u7eb3\u68ee\u00b7\u5fb7\u7c73",
@@ -12489,8 +12541,12 @@ window.DIRECTOR_CHARTS = {
                 "focus": "series",
                 "lineStyle": {
                     "width": 4,
-                    "opacity": 1,
-                    "color": "#f6ecdd"
+                    "opacity": 1
+                }
+            },
+            "blur": {
+                "lineStyle": {
+                    "opacity": 0.08
                 }
             }
         },
@@ -12505,7 +12561,7 @@ window.DIRECTOR_CHARTS = {
             "lineStyle": {
                 "show": false,
                 "width": 2,
-                "opacity": 0.9,
+                "opacity": 0.75,
                 "color": "#724e58"
             },
             "name": "\u7c73\u6d1b\u65af\u00b7\u798f\u5c14\u66fc",
@@ -12527,8 +12583,12 @@ window.DIRECTOR_CHARTS = {
                 "focus": "series",
                 "lineStyle": {
                     "width": 4,
-                    "opacity": 1,
-                    "color": "#f6ecdd"
+                    "opacity": 1
+                }
+            },
+            "blur": {
+                "lineStyle": {
+                    "opacity": 0.08
                 }
             }
         },
@@ -12543,7 +12603,7 @@ window.DIRECTOR_CHARTS = {
             "lineStyle": {
                 "show": false,
                 "width": 2,
-                "opacity": 0.9,
+                "opacity": 0.75,
                 "color": "#4b565b"
             },
             "name": "\u6bd4\u5229\u00b7\u6000\u5c14\u5fb7",
@@ -12565,8 +12625,12 @@ window.DIRECTOR_CHARTS = {
                 "focus": "series",
                 "lineStyle": {
                     "width": 4,
-                    "opacity": 1,
-                    "color": "#f6ecdd"
+                    "opacity": 1
+                }
+            },
+            "blur": {
+                "lineStyle": {
+                    "opacity": 0.08
                 }
             }
         }
@@ -12581,6 +12645,11 @@ window.DIRECTOR_CHARTS = {
         "itemGap": 27,
         "icon": "rect",
         "selectedMode": false,
+        "emphasis": {
+            "textStyle": {
+                "color": "#d7ab82"
+            }
+        },
         "textStyle": {
             "fontSize": 16,
             "lineHeight": 24,
@@ -12611,7 +12680,7 @@ window.DIRECTOR_CHARTS = {
             "color": "#f6ecdd",
             "fontFamily": "Microsoft YaHei"
         },
-        "formatter": function(p){var d=p.data;return echarts.format.encodeHTML(d.name)+'<br/>\u52a0\u6743\u5747\u5206 '+d.value[0].toFixed(3)+' / 5<br/>'+d.value[1]+' \u90e8\u4f5c\u54c1<br/>'+d.ratings.toLocaleString()+' \u6761\u8bc4\u5206\u8bb0\u5f55';}
+        "formatter": function(p){var d=p.data;return echarts.format.encodeHTML(d.name)+'<br/>\u89c2\u4f17\u5747\u5206 '+d.value[0].toFixed(3)+' / 5<br/>'+d.value[1]+' \u90e8\u4f5c\u54c1<br/>'+d.ratings.toLocaleString()+' \u6761\u8bc4\u5206\u8bb0\u5f55';}
     },
     "parallel": {
         "left": 250,
@@ -12643,7 +12712,7 @@ window.DIRECTOR_CHARTS = {
             },
             "axisLabel": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei",
                 "margin": 12
             },
@@ -12661,7 +12730,7 @@ window.DIRECTOR_CHARTS = {
             "interval": 0.05,
             "axisLabel": {
                 "fontSize": 16,
-                "color": "#d7ab82",
+                "color": "#c6b8a6",
                 "fontFamily": "Microsoft YaHei",
                 "formatter": function(v){return v.toFixed(2);}
             }
@@ -12695,8 +12764,18 @@ window.DIRECTOR_CHARTS = {
     ],
     "textStyle": {
         "fontSize": 16,
-        "color": "#d7ab82",
+        "color": "#c6b8a6",
         "fontFamily": "Microsoft YaHei"
+    },
+    "focusStyles": {
+        "active": {
+            "width": 4,
+            "opacity": 1
+        },
+        "background": {
+            "width": 1.5,
+            "opacity": 0.12
+        }
     }
 }
 };
