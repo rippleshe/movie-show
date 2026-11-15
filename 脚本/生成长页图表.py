@@ -456,8 +456,9 @@ def build_templates():
     box.options['xAxis'] = [axis('影片均分 / 5', min=.5, max=5, interval=.5, nameLocation='middle', nameGap=30)]
     box.options['yAxis'] = [axis(kind='category', data=[], inverse=True, axisLabel=text)]
     box.options['series'][0].update({'layout': 'horizontal', 'boxWidth': [16, 26],
-        'itemStyle': {'color': JsCode("function(p){return " + repr(COLORS[:3]) + "[p.dataIndex]+'44';}"),
-                      'borderColor': JsCode("function(p){return " + repr(COLORS[:3]) + "[p.dataIndex];}"), 'borderWidth': 2}})
+        'itemStyle': {'borderWidth': 2}})
+    box.options['roleStyles'] = [{'color': fill, 'borderColor': color} for color, fill in zip(COLORS[:3],
+        ['rgba(216,124,124,.25)', 'rgba(145,158,139,.25)', 'rgba(215,171,130,.25)'])]
     ticks = Custom()
     ticks.add('逐片刻度', render_item=JsCode(
         "function(p,api){var q=api.coord([api.value(0),api.value(1)]),c=" + repr(COLORS[:3]) + "[api.value(1)];"
@@ -493,7 +494,11 @@ def build_templates():
         "children.push({type:'text',style:{x:q[0],y:q[1]+48,text:api.value(3),"
         "fontSize:14,fontFamily:'Microsoft YaHei',fill:'#f6ecdd',align:'center',verticalAlign:'middle'}});"
         "return {type:'group',children:children};}"), data=[])
-    posters.options['xAxis'] = [axis('上映年份', min='dataMin', max='dataMax', minInterval=1, position='top',
+    posters.options['series'][0].update({'clip': False, 'dimensions': [
+        {'name': 'year', 'type': 'float'}, {'name': 'lane', 'type': 'float'},
+        {'name': 'role', 'type': 'int'}, {'name': 'badge', 'type': 'ordinal'},
+        {'name': 'image', 'type': 'ordinal'}, {'name': 'ratio', 'type': 'float'}], 'encode': {'x': 0, 'y': 1}})
+    posters.options['xAxis'] = [axis('上映年份', min='dataMin', max='dataMax', minInterval=1, position='top', nameLocation='middle', nameGap=30,
         axisLabel={**text, 'hideOverlap': True, 'formatter': JsCode('function(v){return String(v);}')})]
     posters.options['yAxis'] = [axis(show=False, inverse=True, min=0, max=144)]
     role_labels = Custom()
@@ -501,7 +506,9 @@ def build_templates():
         "function(p,api){return {type:'text',silent:true,style:{x:6,y:api.coord([0,api.value(0)])[1],"
         "text:api.value(1),fontSize:14,fontFamily:'Microsoft YaHei',fill:" + repr(COLORS[:3]) + "[p.dataIndex],"
         "verticalAlign:'middle'}};}"), data=[])
-    role_labels.options['series'][0]['clip'] = False
+    role_labels.options['series'][0].update({'clip': False, 'silent': True,
+        'dimensions': [{'name': 'lane', 'type': 'float'}, {'name': 'role', 'type': 'ordinal'}],
+        'encode': {'x': -1, 'y': 0}})
     posters.options['series'].extend(role_labels.options['series'])
     posters.options['posterRatios'] = ratios
     posters.options['prepareData'] = JsCode(
@@ -510,7 +517,7 @@ def build_templates():
         "span=Math.max(1,last-first+2),offset=0,nodes=[],labels=[];"
         "groups.forEach(function(g,role){var lanes=[],start=offset,films=g.films.filter(function(f){return f.year!==null;})"
         ".slice().sort(function(a,b){return a.year-b.year||b.ratingCount-a.ratingCount;});"
-        "films.forEach(function(f){var x=(f.year-first+1)/span*Math.max(240,width-104),lane=lanes.findIndex(function(end){return x-end>=62;});"
+        "films.forEach(function(f){var x=(f.year-first+1)/span*Math.max(120,width-(width<480?80:104)),lane=lanes.findIndex(function(end){return x-end>=62;});"
         "if(lane<0)lane=lanes.length;lanes[lane]=x;"
         "nodes.push({name:f.title,movieId:f.id,movieIds:[f.id],year:f.year,mean:f.mean,count:f.ratingCount,"
         "value:[f.year,offset+48+lane*108,role,metric==='mean'?(f.mean===null?'—':f.mean.toFixed(2)):"
@@ -524,12 +531,13 @@ def build_templates():
         "c=" + repr(COLORS[:3]) + "[api.value(3)];"
         "if(api.value(4)===0)return {type:'polygon',shape:{points:[[a[0],a[1]-6],[a[0]+6,a[1]],[a[0],a[1]+6],[a[0]-6,a[1]]]},"
         "style:{fill:c},emphasis:{style:{fill:'#f6ecdd'}}};"
+        "var inside=b[0]-a[0]>=46,end=b[0]>p.coordSys.x+p.coordSys.width-42;"
         "return {type:'group',children:[{type:'rect',shape:{x:a[0],y:a[1]-7,width:b[0]-a[0],height:14,r:2},"
         "style:{fill:c,opacity:.55},emphasis:{style:{fill:c,opacity:1}}},"
         "{type:'line',shape:{x1:b[0],y1:b[1]-11,x2:b[0],y2:b[1]+11},style:{stroke:c,lineWidth:2}},"
-        "{type:'text',style:{x:(a[0]+b[0])/2,y:a[1]-15,text:api.value(4)+' 年',fontSize:14,"
-        "fontFamily:'Microsoft YaHei',fill:'#eadbc8',align:'center',verticalAlign:'bottom'}}]};}"), data=[])
-    gaps.options['xAxis'] = [axis('上映年份', min='dataMin', max='dataMax', minInterval=1, position='top',
+        "{type:'text',style:{x:inside?(a[0]+b[0])/2:end?a[0]-8:b[0]+8,y:a[1],text:api.value(4)+' 年',fontSize:14,"
+        "fontFamily:'Microsoft YaHei',fill:'#f6ecdd',align:inside?'center':end?'right':'left',verticalAlign:'middle'}}]};}"), data=[])
+    gaps.options['xAxis'] = [axis('上映年份', min='dataMin', max='dataMax', minInterval=1, position='top', nameLocation='middle', nameGap=30,
         axisLabel={**text, 'hideOverlap': True, 'formatter': JsCode('function(v){return String(v);}')})]
     gaps.options['yAxis'] = [axis(kind='category', data=[], inverse=True, axisLabel=text)]
     gaps.options['series'][0]['encode'] = {'x': [0, 1], 'y': 2}
@@ -537,24 +545,28 @@ def build_templates():
     credits = Graph()
     credits.add('联合署名', [], [], layout='none', is_roam=True, is_draggable=True,
         label_opts=opts.LabelOpts(is_show=True, font_size=14, color='#eadbc8'),
-        linestyle_opts=opts.LineStyleOpts(width=1.5, color='#919e8b', opacity=.5))
+        linestyle_opts=opts.LineStyleOpts(width=1.5, color='#919e8b', opacity=.3))
+    credits.options['minimumWidth'] = 620
     credits.options['series'][0].update({'nodeScaleRatio': 0, 'center': None, 'zoom': 1,
-        'left': 60, 'right': 130, 'top': 40, 'bottom': 40,
+        'left': 90, 'right': 150, 'top': 'middle', 'bottom': None,
         'labelLayout': {'hideOverlap': True}, 'emphasis': {'focus': 'adjacency',
         'lineStyle': {'opacity': 1, 'width': 3}, 'itemStyle': {'shadowBlur': 12, 'shadowColor': '#d7ab8266'}}})
     credits.options['prepareData'] = JsCode(
         "function(groups,films,others,links,width){var colors=" + repr(COLORS[:4]) + ",nodes=[],"
-        "pitch=88*800/Math.max(160,width-190),rows=Math.max(groups.length,films.length,others.length);"
+        "steps=[68,120,40],columns=[groups,films,others],scale=(width-240)/800,"
+        "height=Math.max(280,Math.max.apply(null,columns.map(function(items,i){return Math.max(0,items.length-1)*steps[i];}))+100);"
         "[groups,films,others].forEach(function(items,column){items.forEach(function(item,index){"
         "var role=item.roleIndex===undefined?3:item.roleIndex,film=column===1;"
-        "nodes.push(Object.assign({},item,{x:column*400,y:(index-(items.length-1)/2)*pitch,"
+        "var offset=(index-(items.length-1)/2)*steps[column];"
+        "nodes.push(Object.assign({},item,{x:column*400,y:offset/scale,scrollX:90+column*400*scale,scrollY:height/2+offset,"
         "symbol:film?(item.image?'image://'+item.image:'rect'):column===0?'roundRect':'circle',"
-        "symbolSize:film?[36,52]:column===0?[94,34]:16,"
+        "symbolKeepAspect:true,"
+        "symbolSize:film?[36,52]:column===0?[140,46]:16,"
         "itemStyle:{color:film?'#d7ab82':colors[role],borderColor:'#f6ecdd',borderWidth:column===0?1:0},"
-        "label:{position:film?'bottom':column===0?'inside':'right',width:film?100:120,overflow:'break',"
-        "lineHeight:18,fontSize:14,color:column===0?'#fff5e7':'#dfd0bd'}}));});});"
-        "return {nodes:nodes,height:Math.max(420,Math.min(2200,rows*88+80)),"
-        "links:links.map(function(link){return Object.assign({},link,{lineStyle:{color:colors[link.roleIndex||0],opacity:.5}});})};}")
+        "label:{position:film?'bottom':column===0?'inside':'right',width:film?140:120,height:film?54:36,"
+        "overflow:'break',lineOverflow:'truncate',lineHeight:18,fontSize:14,color:column===0?'#fff5e7':'#dfd0bd'}}));});});"
+        "return {nodes:nodes,height:height,"
+        "links:links.map(function(link){return Object.assign({},link,{lineStyle:{color:colors[link.roleIndex||0],opacity:.3}});})};}")
 
     chord = Custom()
     chord.add('合作关系', render_item=JsCode(
@@ -589,13 +601,13 @@ def build_templates():
 
     blocks = TreeMap()
     blocks.add('类型构成', [])
-    blocks.options['series'][0].update({'left': 6, 'right': 6, 'top': 8, 'bottom': 8,
+    blocks.options['series'][0].update({'left': 6, 'right': 6, 'top': 8, 'bottom': 8, 'width': None, 'height': None,
         'roam': False, 'nodeClick': False, 'breadcrumb': {'show': False}, 'sort': False,
         'label': {**text, 'show': True, 'color': '#f7eee1',
                   'formatter': JsCode('function(p){return p.data.genre||p.name;}'), 'overflow': 'truncate'},
         'upperLabel': {**text, 'show': True, 'height': 28, 'color': '#f7eee1'},
         'itemStyle': {'borderColor': '#171214', 'borderWidth': 3, 'gapWidth': 3},
-        'levels': [{'itemStyle': {'borderWidth': 0, 'gapWidth': 8}},
+        'levels': [{'upperLabel': {'show': False}, 'itemStyle': {'borderWidth': 0, 'gapWidth': 8}},
                    {'upperLabel': {'show': True}, 'itemStyle': {'borderWidth': 2, 'gapWidth': 3}},
                    {'upperLabel': {'show': False}, 'itemStyle': {'borderWidth': 1, 'gapWidth': 1}}]})
     blocks.options['genreOrder'] = genres
@@ -641,15 +653,22 @@ def build_templates():
     film_tooltip = JsCode("function(p){var d=p.data;return echarts.format.encodeHTML(d.name)+'<br/>'+(d.year||'年份未知')+' · '+"
         "(d.mean===null?'暂无评分':d.mean.toFixed(2)+' / 5')+'<br/>'+d.count.toLocaleString()+' 条评分';}")
     return {
-        'ratingsBox': finish(box, (74, 24, 28, 62), tooltip={'formatter': JsCode(
+        'ratingsBox': finish(box, (74, 24, 28, 62),
+            mobile={'grid': {'left': 50, 'right': 16}, 'xAxis': [{'interval': 1, 'axisLabel': {'fontSize': 12}}],
+                    'yAxis': [{'axisLabel': {'fontSize': 12}}]}, max_width=480, tooltip={'formatter': JsCode(
             "function(p){var d=p.data;if(d.statistic)return echarts.format.encodeHTML(d.name)+'<br/>中位数 '+d.value[2].toFixed(2)+"
             "' · 中间 50% '+d.value[1].toFixed(2)+'–'+d.value[3].toFixed(2)+'<br/>'+d.sample+' 部作品';"
             "return echarts.format.encodeHTML(d.name)+'<br/>'+d.mean.toFixed(2)+' / 5 · '+d.year;}")}),
-        'ratingsThreshold': finish(threshold, (50, 24, 34, 62), tooltip={'formatter': JsCode(
+        'ratingsThreshold': finish(threshold, (50, 24, 34, 62),
+            mobile={'xAxis': [{'interval': 1, 'axisLabel': {'fontSize': 12}}]}, max_width=480, tooltip={'formatter': JsCode(
             "function(p){var d=p.data;return echarts.format.encodeHTML(p.seriesName)+'<br/>≥ '+d.value[0].toFixed(3)+"
             "' 分 · '+d.count+' / '+d.total+' 部<br/>'+d.value[1].toFixed(1)+'%';}")}),
-        'careerPosters': finish(posters, (76, 28, 48, 44), tooltip={'formatter': film_tooltip}),
-        'careerGaps': finish(gaps, (130, 28, 42, 40), tooltip={'formatter': JsCode(
+        'careerPosters': finish(posters, (76, 28, 48, 44),
+            mobile={'grid': {'left': 50, 'right': 30}}, max_width=480, tooltip={'formatter': film_tooltip}),
+        'careerGaps': finish(gaps, (160, 28, 42, 40),
+            mobile={'grid': {'left': 74, 'right': 18}, 'xAxis': [{'axisLabel': {'fontSize': 12}}],
+                    'yAxis': [{'axisLabel': {'fontSize': 12, 'formatter': JsCode("function(v){return v.split(' · ')[1].replace(/→\\d{2}/,'→');}")}}]},
+            max_width=480, tooltip={'formatter': JsCode(
             "function(p){var d=p.data;return echarts.format.encodeHTML(d.director)+'<br/>'+"
             "echarts.format.encodeHTML(d.before)+' ('+d.value[0]+')<br/>→ '+echarts.format.encodeHTML(d.after)+"
             "' ('+d.value[1]+')<br/>上映年相差 '+d.value[4]+' 年';}")}),

@@ -353,18 +353,19 @@
     }
     try {
       await loadData();
-      byId('search-status').hidden = true;
-      if (target?.type === 'film') {
-        if (target.directorId) showDirector(target.directorId);
-        showFilm(target.id);
-      }
-      else if (target?.id) showDirector(target.id);
-      else renderSearch();
     } catch (error) {
       byId('search-status').textContent = '数据未载入，请检查本地数据文件。';
       byId('search-status').hidden = false;
       console.error(error);
+      return;
     }
+    byId('search-status').hidden = true;
+    if (target?.type === 'film') {
+      if (target.directorId) showDirector(target.directorId);
+      showFilm(target.id);
+    }
+    else if (target?.id) showDirector(target.id);
+    else renderSearch();
   }
 
   function showSearch() {
@@ -494,6 +495,10 @@
 
   function setAnalysisChart(key, template, update, height = 340) {
     const element = byId(key === 'filmRatings' ? 'film-rating-chart' : key === 'zoom' ? 'zoom-chart' : 'analysis-' + key);
+    const context = insightGroups.map(group => group.director.id).join(',');
+    const newContext = element.dataset.template !== template || element.dataset.studyContext !== context;
+    const base = window.DIRECTOR_TEMPLATES[template];
+    element.style.minWidth = base.minimumWidth ? base.minimumWidth + 'px' : '';
     if (key !== 'filmRatings') element.style.height = height + 'px';
     let chart = analysisCharts.get(key);
     if (!chart) {
@@ -514,14 +519,20 @@
       analysisCharts.set(key, chart);
       chartResizeObserver.observe(element);
     }
+    chart.resize();
     if (element.dataset.template !== template) {
-      chart.setOption(window.DIRECTOR_TEMPLATES[template], true);
+      chart.setOption(base, true);
       element.dataset.template = template;
     }
     element.dataset.studyWidth = String(Math.round(element.getBoundingClientRect().width));
     chart.setOption(update);
     if (reducedMotion) chart.setOption({animation: false});
-    chart.resize();
+    if (template === 'creditsNetwork' && newContext) {
+      chart.setOption({series: [{center: base.series[0].center, zoom: base.series[0].zoom}]});
+      element.parentElement.scrollTop = Math.max(0, (height - element.parentElement.clientHeight) / 2);
+      element.parentElement.scrollLeft = 0;
+    }
+    element.dataset.studyContext = context;
   }
 
   function highlightStudyFilms(ids) {
@@ -705,6 +716,7 @@
           const lower = sorted.find(film => film.mean >= q1 - 1.5 * (q3 - q1)).mean;
           const upper = sorted.findLast(film => film.mean <= q3 + 1.5 * (q3 - q1)).mean;
           boxes.push({name: group.director.name, value: [lower, q1, median(sorted), q3, upper], statistic: true,
+            itemStyle: window.DIRECTOR_TEMPLATES.ratingsBox.roleStyles[role],
             sample: sorted.length, movieIds: sorted.filter(film => film.mean >= q1 && film.mean <= q3).map(film => film.id)});
           sorted.forEach((film, index) => ticks.push({name: film.title, movieIds: [film.id],
             mean: film.mean, year: film.year, value: [film.mean, role, index]}));
@@ -791,8 +803,9 @@
       });
       const prepared = window.DIRECTOR_TEMPLATES.creditsNetwork.prepareData(
         people.filter(person => groupIds.has(person.id)), films, people.filter(person => !groupIds.has(person.id)), graphLinks,
-        width || byId('analysis-partners').getBoundingClientRect().width);
-      return {template: 'creditsNetwork', metric, people: options, empty: relations.length ? '' : '暂无联合执导记录', height: prepared.height,
+        Math.max(window.DIRECTOR_TEMPLATES.creditsNetwork.minimumWidth, width || byId('analysis-partners').getBoundingClientRect().width));
+      return {template: 'creditsNetwork', metric, people: prepared.nodes.filter(person => person.directorId && person.movieIds.length),
+        empty: relations.length ? '' : '暂无联合执导记录', height: prepared.height,
         update: {series: [{data: prepared.nodes, links: prepared.links}]}};
     }
 
@@ -997,7 +1010,14 @@
   byId('genre-period').addEventListener('change', event => { genrePeriod = Number(event.target.value); renderInsights(); });
   byId('study-partner').addEventListener('change', event => {
     const person = chartView('partners').people.find(person => person.id === event.target.value);
-    if (person) selectStudyMovies(person.movieIds, person.id);
+    if (person) {
+      selectStudyMovies(person.movieIds, person.id);
+      if (!chartModes.partners) {
+        const track = byId('analysis-partners').parentElement;
+        track.scrollTop = person.scrollY - track.clientHeight / 2;
+        track.scrollLeft = person.scrollX - track.clientWidth / 2;
+      }
+    }
   });
   byId('study-clear').addEventListener('click', () => selectStudyMovies([]));
   for (const id of ['study-view-film', 'zoom-view-film']) byId(id).addEventListener('click', () => {

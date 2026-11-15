@@ -45,8 +45,6 @@ window.DIRECTOR_TEMPLATES = {
             "zlevel": 0,
             "z": 2,
             "itemStyle": {
-                "color": function(p){return ['#d87c7c', '#919e8b', '#d7ab82'][p.dataIndex]+'44';},
-                "borderColor": function(p){return ['#d87c7c', '#919e8b', '#d7ab82'][p.dataIndex];},
                 "borderWidth": 2
             }
         },
@@ -160,6 +158,20 @@ window.DIRECTOR_TEMPLATES = {
         "#919e8b",
         "#d7ab82"
     ],
+    "roleStyles": [
+        {
+            "color": "rgba(216,124,124,.25)",
+            "borderColor": "#d87c7c"
+        },
+        {
+            "color": "rgba(145,158,139,.25)",
+            "borderColor": "#919e8b"
+        },
+        {
+            "color": "rgba(215,171,130,.25)",
+            "borderColor": "#d7ab82"
+        }
+    ],
     "textStyle": {
         "fontFamily": "Microsoft YaHei",
         "fontSize": 14,
@@ -170,7 +182,58 @@ window.DIRECTOR_TEMPLATES = {
         "right": 24,
         "top": 28,
         "bottom": 62
-    }
+    },
+    "media": [
+        {
+            "query": {
+                "maxWidth": 480
+            },
+            "option": {
+                "grid": {
+                    "left": 50,
+                    "right": 16
+                },
+                "xAxis": [
+                    {
+                        "interval": 1,
+                        "axisLabel": {
+                            "fontSize": 12
+                        }
+                    }
+                ],
+                "yAxis": [
+                    {
+                        "axisLabel": {
+                            "fontSize": 12
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "option": {
+                "grid": {
+                    "left": 74,
+                    "right": 24
+                },
+                "xAxis": [
+                    {
+                        "interval": 0.5,
+                        "axisLabel": {
+                            "fontSize": 14
+                        }
+                    }
+                ],
+                "yAxis": [
+                    {
+                        "axisLabel": {
+                            "fontSize": 14
+                        }
+                    }
+                ]
+            }
+        }
+    ]
 },
 "ratingsThreshold":{
     "backgroundColor": "transparent",
@@ -401,7 +464,36 @@ window.DIRECTOR_TEMPLATES = {
         "right": 24,
         "top": 34,
         "bottom": 62
-    }
+    },
+    "media": [
+        {
+            "query": {
+                "maxWidth": 480
+            },
+            "option": {
+                "xAxis": [
+                    {
+                        "interval": 1,
+                        "axisLabel": {
+                            "fontSize": 12
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "option": {
+                "xAxis": [
+                    {
+                        "interval": 0.5,
+                        "axisLabel": {
+                            "fontSize": 14
+                        }
+                    }
+                ]
+            }
+        }
+    ]
 },
 "careerPosters":{
     "backgroundColor": "transparent",
@@ -432,8 +524,38 @@ window.DIRECTOR_TEMPLATES = {
             "datasetIndex": 0,
             "seriesLayoutBy": "column",
             "selectedMode": false,
+            "dimensions": [
+                {
+                    "name": "year",
+                    "type": "float"
+                },
+                {
+                    "name": "lane",
+                    "type": "float"
+                },
+                {
+                    "name": "role",
+                    "type": "int"
+                },
+                {
+                    "name": "badge",
+                    "type": "ordinal"
+                },
+                {
+                    "name": "image",
+                    "type": "ordinal"
+                },
+                {
+                    "name": "ratio",
+                    "type": "float"
+                }
+            ],
+            "encode": {
+                "x": 0,
+                "y": 1
+            },
             "data": [],
-            "clip": true,
+            "clip": false,
             "zlevel": 0,
             "z": 2
         },
@@ -452,10 +574,25 @@ window.DIRECTOR_TEMPLATES = {
             "datasetIndex": 0,
             "seriesLayoutBy": "column",
             "selectedMode": false,
+            "dimensions": [
+                {
+                    "name": "lane",
+                    "type": "float"
+                },
+                {
+                    "name": "role",
+                    "type": "ordinal"
+                }
+            ],
+            "encode": {
+                "x": -1,
+                "y": 0
+            },
             "data": [],
             "clip": false,
             "zlevel": 0,
-            "z": 2
+            "z": 2,
+            "silent": true
         }
     ],
     "legend": {
@@ -506,7 +643,9 @@ window.DIRECTOR_TEMPLATES = {
             "min": "dataMin",
             "max": "dataMax",
             "minInterval": 1,
-            "position": "top"
+            "position": "top",
+            "nameLocation": "middle",
+            "nameGap": 30
         }
     ],
     "yAxis": [
@@ -2979,7 +3118,7 @@ window.DIRECTOR_TEMPLATES = {
         "288837": 1.3158,
         "288841": 1.25
     },
-    "prepareData": function(groups,width,metric){var all=groups.flatMap(function(g){return g.films.filter(function(f){return f.year!==null;});}),first=Math.min.apply(null,all.map(function(f){return f.year;})),last=Math.max.apply(null,all.map(function(f){return f.year;})),span=Math.max(1,last-first+2),offset=0,nodes=[],labels=[];groups.forEach(function(g,role){var lanes=[],start=offset,films=g.films.filter(function(f){return f.year!==null;}).slice().sort(function(a,b){return a.year-b.year||b.ratingCount-a.ratingCount;});films.forEach(function(f){var x=(f.year-first+1)/span*Math.max(240,width-104),lane=lanes.findIndex(function(end){return x-end>=62;});if(lane<0)lane=lanes.length;lanes[lane]=x;nodes.push({name:f.title,movieId:f.id,movieIds:[f.id],year:f.year,mean:f.mean,count:f.ratingCount,value:[f.year,offset+48+lane*108,role,metric==='mean'?(f.mean===null?'\u2014':f.mean.toFixed(2)):(f.ratingCount>=10000?(f.ratingCount/10000).toFixed(1)+'\u4e07':String(f.ratingCount)),f.image||'',f.ratio||1]});});offset+=Math.max(108,lanes.length*108)+24;labels.push({value:[(start+offset)/2,g.role]});});return {nodes:nodes,labels:labels,height:Math.max(132,offset),first:first-1,last:last+1};},
+    "prepareData": function(groups,width,metric){var all=groups.flatMap(function(g){return g.films.filter(function(f){return f.year!==null;});}),first=Math.min.apply(null,all.map(function(f){return f.year;})),last=Math.max.apply(null,all.map(function(f){return f.year;})),span=Math.max(1,last-first+2),offset=0,nodes=[],labels=[];groups.forEach(function(g,role){var lanes=[],start=offset,films=g.films.filter(function(f){return f.year!==null;}).slice().sort(function(a,b){return a.year-b.year||b.ratingCount-a.ratingCount;});films.forEach(function(f){var x=(f.year-first+1)/span*Math.max(120,width-(width<480?80:104)),lane=lanes.findIndex(function(end){return x-end>=62;});if(lane<0)lane=lanes.length;lanes[lane]=x;nodes.push({name:f.title,movieId:f.id,movieIds:[f.id],year:f.year,mean:f.mean,count:f.ratingCount,value:[f.year,offset+48+lane*108,role,metric==='mean'?(f.mean===null?'\u2014':f.mean.toFixed(2)):(f.ratingCount>=10000?(f.ratingCount/10000).toFixed(1)+'\u4e07':String(f.ratingCount)),f.image||'',f.ratio||1]});});offset+=Math.max(108,lanes.length*108)+24;labels.push({value:[(start+offset)/2,g.role]});});return {nodes:nodes,labels:labels,height:Math.max(132,offset),first:first-1,last:last+1};},
     "textStyle": {
         "fontFamily": "Microsoft YaHei",
         "fontSize": 14,
@@ -2990,7 +3129,28 @@ window.DIRECTOR_TEMPLATES = {
         "right": 28,
         "top": 48,
         "bottom": 44
-    }
+    },
+    "media": [
+        {
+            "query": {
+                "maxWidth": 480
+            },
+            "option": {
+                "grid": {
+                    "left": 50,
+                    "right": 30
+                }
+            }
+        },
+        {
+            "option": {
+                "grid": {
+                    "left": 76,
+                    "right": 28
+                }
+            }
+        }
+    ]
 },
 "careerGaps":{
     "backgroundColor": "transparent",
@@ -3009,7 +3169,7 @@ window.DIRECTOR_TEMPLATES = {
         {
             "type": "custom",
             "name": "\u53d1\u884c\u95f4\u9694",
-            "renderItem": function(p,api){var a=api.coord([api.value(0),api.value(2)]),b=api.coord([api.value(1),api.value(2)]),c=['#d87c7c', '#919e8b', '#d7ab82'][api.value(3)];if(api.value(4)===0)return {type:'polygon',shape:{points:[[a[0],a[1]-6],[a[0]+6,a[1]],[a[0],a[1]+6],[a[0]-6,a[1]]]},style:{fill:c},emphasis:{style:{fill:'#f6ecdd'}}};return {type:'group',children:[{type:'rect',shape:{x:a[0],y:a[1]-7,width:b[0]-a[0],height:14,r:2},style:{fill:c,opacity:.55},emphasis:{style:{fill:c,opacity:1}}},{type:'line',shape:{x1:b[0],y1:b[1]-11,x2:b[0],y2:b[1]+11},style:{stroke:c,lineWidth:2}},{type:'text',style:{x:(a[0]+b[0])/2,y:a[1]-15,text:api.value(4)+' \u5e74',fontSize:14,fontFamily:'Microsoft YaHei',fill:'#eadbc8',align:'center',verticalAlign:'bottom'}}]};},
+            "renderItem": function(p,api){var a=api.coord([api.value(0),api.value(2)]),b=api.coord([api.value(1),api.value(2)]),c=['#d87c7c', '#919e8b', '#d7ab82'][api.value(3)];if(api.value(4)===0)return {type:'polygon',shape:{points:[[a[0],a[1]-6],[a[0]+6,a[1]],[a[0],a[1]+6],[a[0]-6,a[1]]]},style:{fill:c},emphasis:{style:{fill:'#f6ecdd'}}};var inside=b[0]-a[0]>=46,end=b[0]>p.coordSys.x+p.coordSys.width-42;return {type:'group',children:[{type:'rect',shape:{x:a[0],y:a[1]-7,width:b[0]-a[0],height:14,r:2},style:{fill:c,opacity:.55},emphasis:{style:{fill:c,opacity:1}}},{type:'line',shape:{x1:b[0],y1:b[1]-11,x2:b[0],y2:b[1]+11},style:{stroke:c,lineWidth:2}},{type:'text',style:{x:inside?(a[0]+b[0])/2:end?a[0]-8:b[0]+8,y:a[1],text:api.value(4)+' \u5e74',fontSize:14,fontFamily:'Microsoft YaHei',fill:'#f6ecdd',align:inside?'center':end?'right':'left',verticalAlign:'middle'}}]};},
             "colorBy": "series",
             "legendHoverLink": true,
             "coordinateSystem": "cartesian2d",
@@ -3082,7 +3242,9 @@ window.DIRECTOR_TEMPLATES = {
             "min": "dataMin",
             "max": "dataMax",
             "minInterval": 1,
-            "position": "top"
+            "position": "top",
+            "nameLocation": "middle",
+            "nameGap": 30
         }
     ],
     "yAxis": [
@@ -3121,11 +3283,61 @@ window.DIRECTOR_TEMPLATES = {
         "color": "#c6b8a6"
     },
     "grid": {
-        "left": 130,
+        "left": 160,
         "right": 28,
         "top": 42,
         "bottom": 40
-    }
+    },
+    "media": [
+        {
+            "query": {
+                "maxWidth": 480
+            },
+            "option": {
+                "grid": {
+                    "left": 74,
+                    "right": 18
+                },
+                "xAxis": [
+                    {
+                        "axisLabel": {
+                            "fontSize": 12
+                        }
+                    }
+                ],
+                "yAxis": [
+                    {
+                        "axisLabel": {
+                            "fontSize": 12,
+                            "formatter": function(v){return v.split(' \u00b7 ')[1].replace(/\u2192\\d{2}/,'\u2192');}
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "option": {
+                "grid": {
+                    "left": 160,
+                    "right": 28
+                },
+                "xAxis": [
+                    {
+                        "axisLabel": {
+                            "fontSize": 14
+                        }
+                    }
+                ],
+                "yAxis": [
+                    {
+                        "axisLabel": {
+                            "fontSize": 14
+                        }
+                    }
+                ]
+            }
+        }
+    ]
 },
 "creditsNetwork":{
     "backgroundColor": "transparent",
@@ -3167,7 +3379,7 @@ window.DIRECTOR_TEMPLATES = {
             "lineStyle": {
                 "show": false,
                 "width": 1.5,
-                "opacity": 0.5,
+                "opacity": 0.3,
                 "color": "#919e8b"
             },
             "roam": true,
@@ -3200,10 +3412,9 @@ window.DIRECTOR_TEMPLATES = {
             },
             "preserveAspect": false,
             "zoom": 1,
-            "left": 60,
-            "right": 130,
-            "top": 40,
-            "bottom": 40,
+            "left": 90,
+            "right": 150,
+            "top": "middle",
             "labelLayout": {
                 "hideOverlap": true
             }
@@ -3225,7 +3436,8 @@ window.DIRECTOR_TEMPLATES = {
         },
         "formatter": function(p){var d=p.data;return echarts.format.encodeHTML(d.name)+(d.movieIds?'<br/>'+d.movieIds.length+' \u90e8\u8054\u5408\u6267\u5bfc\u5f71\u7247':'');}
     },
-    "prepareData": function(groups,films,others,links,width){var colors=['#d87c7c', '#919e8b', '#d7ab82', '#6e7074'],nodes=[],pitch=88*800/Math.max(160,width-190),rows=Math.max(groups.length,films.length,others.length);[groups,films,others].forEach(function(items,column){items.forEach(function(item,index){var role=item.roleIndex===undefined?3:item.roleIndex,film=column===1;nodes.push(Object.assign({},item,{x:column*400,y:(index-(items.length-1)/2)*pitch,symbol:film?(item.image?'image://'+item.image:'rect'):column===0?'roundRect':'circle',symbolSize:film?[36,52]:column===0?[94,34]:16,itemStyle:{color:film?'#d7ab82':colors[role],borderColor:'#f6ecdd',borderWidth:column===0?1:0},label:{position:film?'bottom':column===0?'inside':'right',width:film?100:120,overflow:'break',lineHeight:18,fontSize:14,color:column===0?'#fff5e7':'#dfd0bd'}}));});});return {nodes:nodes,height:Math.max(420,Math.min(2200,rows*88+80)),links:links.map(function(link){return Object.assign({},link,{lineStyle:{color:colors[link.roleIndex||0],opacity:.5}});})};},
+    "minimumWidth": 620,
+    "prepareData": function(groups,films,others,links,width){var colors=['#d87c7c', '#919e8b', '#d7ab82', '#6e7074'],nodes=[],steps=[68,120,40],columns=[groups,films,others],scale=(width-240)/800,height=Math.max(280,Math.max.apply(null,columns.map(function(items,i){return Math.max(0,items.length-1)*steps[i];}))+100);[groups,films,others].forEach(function(items,column){items.forEach(function(item,index){var role=item.roleIndex===undefined?3:item.roleIndex,film=column===1;var offset=(index-(items.length-1)/2)*steps[column];nodes.push(Object.assign({},item,{x:column*400,y:offset/scale,scrollX:90+column*400*scale,scrollY:height/2+offset,symbol:film?(item.image?'image://'+item.image:'rect'):column===0?'roundRect':'circle',symbolKeepAspect:true,symbolSize:film?[36,52]:column===0?[140,46]:16,itemStyle:{color:film?'#d7ab82':colors[role],borderColor:'#f6ecdd',borderWidth:column===0?1:0},label:{position:film?'bottom':column===0?'inside':'right',width:film?140:120,height:film?54:36,overflow:'break',lineOverflow:'truncate',lineHeight:18,fontSize:14,color:column===0?'#fff5e7':'#dfd0bd'}}));});});return {nodes:nodes,height:height,links:links.map(function(link){return Object.assign({},link,{lineStyle:{color:colors[link.roleIndex||0],opacity:.3}});})};},
     "textStyle": {
         "fontFamily": "Microsoft YaHei",
         "fontSize": 14,
@@ -3439,8 +3651,6 @@ window.DIRECTOR_TEMPLATES = {
             "left": 6,
             "right": 6,
             "top": 8,
-            "width": "80%",
-            "height": "80%",
             "bottom": 8,
             "label": {
                 "fontFamily": "Microsoft YaHei",
@@ -3463,6 +3673,9 @@ window.DIRECTOR_TEMPLATES = {
             "zoomToNodeRatio": 0.1024,
             "levels": [
                 {
+                    "upperLabel": {
+                        "show": false
+                    },
                     "itemStyle": {
                         "borderWidth": 0,
                         "gapWidth": 8
